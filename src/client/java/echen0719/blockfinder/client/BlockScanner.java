@@ -2,10 +2,8 @@ package echen0719.blockfinder.client;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.particles.ParticleTypes;
 
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 
@@ -19,7 +17,7 @@ import java.util.concurrent.ExecutorService;
 public class BlockScanner {
     private static final Minecraft client = Minecraft.getInstance();
 
-    private static List<BlockPos> foundBlocks = Collections.synchronizedList(new ArrayList<>()); // for concurrent scanning safety
+    public static List<BlockPos> foundBlocks = Collections.synchronizedList(new ArrayList<>()); // for concurrent scanning safety
 
     private static boolean isScanning = false;
     private static ExecutorService executor = Executors.newCachedThreadPool();
@@ -33,7 +31,9 @@ public class BlockScanner {
         }
 
         isScanning = true;
-        foundBlocks.clear();
+        synchronized (foundBlocks) {
+            foundBlocks.clear();
+        }
 
         BlockPos playerCenter = client.player.blockPosition();
         int playerCenterChunkX = playerCenter.getX() >> 4;
@@ -54,12 +54,6 @@ public class BlockScanner {
             for (LevelChunk chunk : chunksToScan) {
                 scanInChunk(chunk, targetBlock);
             }
-
-            client.execute(() -> {
-                for (BlockPos position : foundBlocks) {
-                    // draw
-                }
-            });
 
             isScanning = false;
         });

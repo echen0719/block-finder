@@ -1,6 +1,7 @@
 package echen0719.blockfinder.client;
 
 import net.minecraft.client.KeyMapping;
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Blocks;
 
 import com.mojang.blaze3d.platform.InputConstants;
@@ -9,6 +10,7 @@ import org.lwjgl.glfw.GLFW;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 
 public class BlockFinderClient implements ClientModInitializer {
@@ -29,6 +31,16 @@ public class BlockFinderClient implements ClientModInitializer {
 			while (scanKey.consumeClick()) {
 				BlockScanner.scan(7, Blocks.DIAMOND_ORE);
 			}
+		});
+
+		LevelRenderEvents.END_MAIN.register(context -> {
+			if (BlockScanner.foundBlocks != null) {
+				synchronized (BlockScanner.foundBlocks) {
+					for (BlockPos position : BlockScanner.foundBlocks) {
+						BlockDrawer.drawOutline(context, position);
+					}
+				} // prevents ConcurrentModificationException
+            }
 		});
 	}
 }
