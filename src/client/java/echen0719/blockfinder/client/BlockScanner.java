@@ -19,7 +19,7 @@ import java.util.concurrent.ExecutorService;
 public class BlockScanner {
     private static final Minecraft client = Minecraft.getInstance();
 
-    public static List<BlockPos> foundBlocks = Collections.synchronizedList(new ArrayList<>()); // for concurrent scanning safety
+    private static List<BlockPos> foundBlocks = Collections.synchronizedList(new ArrayList<>()); // for concurrent scanning safety
 
     private static boolean isScanning = false;
     private static ExecutorService executor = Executors.newCachedThreadPool();
@@ -57,14 +57,7 @@ public class BlockScanner {
 
             client.execute(() -> {
                 for (BlockPos position : foundBlocks) {
-                    double x = position.getX() + 0.5;
-                    double y = position.getY() + 0.5;
-                    double z = position.getZ() + 0.5;
-
-                    while (true) {
-                        try {Thread.sleep(300);} catch (Exception e) {}
-                        client.level.addParticle(ParticleTypes.TOTEM_OF_UNDYING, x, y, z, 0.0, 0.0, 0.0);
-                    }
+                    // draw
                 }
             });
 
