@@ -31,6 +31,7 @@ public class menuScreen extends Screen {
 
         this.addRenderableWidget(chunkSizeBox);
         this.addRenderableWidget(blockDropdown);
+        this.addRenderableWidget(blockDropdown.getSearchBox());
     }
 
     public void createButtons() {

@@ -23,23 +23,21 @@ public class searchableDropdown extends AbstractWidget {
     private EditBox searchBox;
 
     // layout constants
-    private int startX = 0;
-    private int startY = 0;
+    private int itemHeight = 15;
+    private int displayedItems = 5;
 
     // values
     private boolean isDropdownOpen = false;
     private Block selectedBlock = null;
 
     // lists
-    private List<String> allBlocks;
-    private List<String> filteredBlocks;
+    private List<String> allBlocks = new ArrayList<String>();
+    private List<String> filteredBlocks = new ArrayList<String>();
 
     public searchableDropdown(Screen parent, int x, int y, int width, int height, String message) {
-        super(height, height, width, height, Component.literal(message));
+        super(x, y, width, height, Component.literal(message));
 
         this.parent = parent;
-        this.startX = x;
-        this.startY = y;
 
         for (Block block : BuiltInRegistries.BLOCK) {
             this.allBlocks.add(block.getDescriptionId());
@@ -48,9 +46,15 @@ public class searchableDropdown extends AbstractWidget {
         this.filteredBlocks = new ArrayList<>(this.allBlocks);
     }
 
-    public void createSearchBox() {
-        searchBox = guiUtils.createInputBox(parent, startX, startY, 150, 20, "Enter block name...");
-        this.searchBox.setResponder(this::changeSearchTerm);
+    public EditBox getSearchBox() {
+        if (this.searchBox == null) {
+            int startX = this.getX();
+            int startY = this.getY();
+
+            searchBox = guiUtils.createInputBox(parent, startX, startY, 150, 20, "Enter block name...");
+            this.searchBox.setResponder(this::changeSearchTerm);
+        }
+        return this.searchBox;
     }
 
     public void changeSearchTerm(String searchTerm) {
@@ -74,11 +78,11 @@ public class searchableDropdown extends AbstractWidget {
 
     @Override
     protected void updateWidgetNarration(NarrationElementOutput narrationElementOutput) {
-        // something
+        this.searchBox.updateWidgetNarration(narrationElementOutput);
     }
 
     @Override
     protected void extractWidgetRenderState(GuiGraphicsExtractor context, int x, int y, float delta) {
-        super.extractRenderState(context, x, y, delta);
+        // idk
     }
 }
