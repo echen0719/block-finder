@@ -6,6 +6,8 @@ import net.minecraft.world.level.block.Blocks;
 
 import com.mojang.blaze3d.platform.InputConstants;
 
+import echen0719.blockfinder.screens.menuScreen;
+
 import org.lwjgl.glfw.GLFW;
 
 import net.fabricmc.api.ClientModInitializer;
@@ -14,8 +16,9 @@ import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 
 public class BlockFinderClient implements ClientModInitializer {
-	public static KeyMapping scanKey;
+	public static menuScreen mainScreen;
 
+	public static KeyMapping scanKey;
 	private static final KeyMapping.Category category = null;
 
 	@Override
@@ -29,7 +32,8 @@ public class BlockFinderClient implements ClientModInitializer {
 
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			while (scanKey.consumeClick()) {
-				BlockScanner.scan(2, Blocks.DEEPSLATE_DIAMOND_ORE);
+				mainScreen = new menuScreen();
+				client.setScreenAndShow(mainScreen);
 			}
 		});
 
