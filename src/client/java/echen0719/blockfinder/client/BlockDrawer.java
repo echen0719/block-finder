@@ -1,6 +1,7 @@
 package echen0719.blockfinder.client;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.DynamicUniforms;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
@@ -12,11 +13,20 @@ import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.PrimitiveTopology;
+import com.mojang.blaze3d.buffers.GpuBuffer;
+import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.DepthStencilState;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.CompareOp;
+import com.mojang.blaze3d.systems.RenderPass;
+import com.mojang.blaze3d.systems.RenderSystem;
+
+import java.util.OptionalDouble;
+import java.util.Optional;
 
 import org.joml.Matrix4f;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
 
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
 
@@ -32,6 +42,8 @@ public class BlockDrawer {
         withCull(false).withPrimitiveTopology(PrimitiveTopology.LINES).
         withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false)
     ).build());
+
+    private static final RenderSystem.AutoStorageIndexBuffer indices = RenderSystem.getSequentialBuffer(PrimitiveTopology.LINES);
 
     public static void drawOutline(LevelRenderContext context, BlockPos position) {
         if (client.level == null) return;
@@ -86,7 +98,41 @@ public class BlockDrawer {
         drawEdge(bufferBuilder, matrix, x2, y1, z2, x2, y2, z2, r, g, b, a, lineWidth); // Side-East
 
         try (MeshData meshData = bufferBuilder.buildOrThrow()) {
-            // do something here to actually render it
+            int indexCount = meshData.drawState().indexCount();
+            GpuBuffer vertexBuffer = RenderSystem.getDevice().createBuffer(() -> 
+                "blockfinder buffer", GpuBuffer.USAGE_VERTEX, meshData.vertexBuffer()
+            );
+
+            GpuBuffer gpuBuffer = indices.getBuffer(indexCount);
+            var colorTextureView = client.gameRenderer.mainRenderTarget().getColorTextureView();
+            var depthTextureView = client.gameRenderer.mainRenderTarget().getDepthTextureView();
+
+            Matrix4f modelViewMatrix = new Matrix4f(matrices.last().pose());
+
+            GpuBufferSlice[] gpubufferslice = RenderSystem.getDynamicUniforms().writeTransforms(
+                new DynamicUniforms.Transform(
+                    modelViewMatrix,
+                    new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), 
+                    new Vector3f(), 
+                    new Matrix4f()
+                )
+            );
+
+            try (RenderPass renderPass = RenderSystem.getDevice().
+                    createCommandEncoder().
+                    createRenderPass(() -> "blockfinder_outline", colorTextureView, Optional.empty(), depthTextureView, OptionalDouble.empty())) {
+                
+                RenderSystem.bindDefaultUniforms(renderPass);
+
+                renderPass.setVertexBuffer(0, vertexBuffer.slice());
+                renderPass.setIndexBuffer(gpuBuffer, indices.type());
+                renderPass.setUniform("DynamicTransforms", gpubufferslice[0]);
+                
+                renderPass.setPipeline(seeThroughLines);
+                renderPass.drawIndexed(indexCount, 1, 0, 0, 0);
+            }
+            
+            vertexBuffer.close();
         }
         catch (Exception e) {
             e.printStackTrace();
