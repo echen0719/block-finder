@@ -29,7 +29,7 @@ public class BlockFinderClient implements ClientModInitializer {
 
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			while (scanKey.consumeClick()) {
-				BlockScanner.scan(7, Blocks.DIAMOND_ORE);
+				BlockScanner.scan(2, Blocks.DEEPSLATE_DIAMOND_ORE);
 			}
 		});
 
