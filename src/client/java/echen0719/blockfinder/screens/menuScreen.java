@@ -2,11 +2,14 @@ package echen0719.blockfinder.screens;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.Block;
+
+import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents;
 
 import echen0719.blockfinder.client.BlockScanner;
 import echen0719.blockfinder.utils.guiUtils;
@@ -48,11 +51,6 @@ public class menuScreen extends Screen {
             savedBlock = block;
 
             try {
-                if (false) {
-                    System.out.println("I'm not rendering air");
-                    return;
-                }
-
                 BlockScanner.scan(Integer.parseInt(chunkSize), block);
             }
             catch (NumberFormatException e) {
@@ -61,6 +59,26 @@ public class menuScreen extends Screen {
         });
 
         this.addRenderableWidget(submitButton);
+    }
+
+    // using previous code from serverscan
+    private boolean onMouseScroll(Screen screen, double mouseX, double mouseY, double deltaX, double deltaY, boolean consumed) {
+        blockDropdown.handleScroll(mouseX, mouseY, deltaY);
+        return true;
+    }
+
+    private boolean onMouseClick(Screen screen, MouseButtonEvent event, boolean consumed) {
+        if (event.button() == 0) {
+            return blockDropdown.onItemClick(event.x(), event.y()) || consumed;
+        }
+        return consumed;
+    }
+
+    private boolean onMouseRelease(Screen screen, MouseButtonEvent event, boolean consumed) {
+        if (event.button() == 0) {
+            blockDropdown.handleMouseRelease();
+        }
+        return consumed;
     }
 
     @Override
@@ -72,11 +90,23 @@ public class menuScreen extends Screen {
         createButtons();
 
         chunkSizeBox.setValue(savedChunkSize);
-        // ...setValue(savedBlock);
+        if (savedBlock != null) {
+            blockDropdown.setSelectedBlock(savedBlock);
+        }
+
+        ScreenMouseEvents.afterMouseScroll(this).register((ScreenMouseEvents.AfterMouseScroll) this::onMouseScroll);
+        ScreenMouseEvents.afterMouseClick(this).register((ScreenMouseEvents.AfterMouseClick) this::onMouseClick);
+        ScreenMouseEvents.afterMouseRelease(this).register((ScreenMouseEvents.AfterMouseRelease) this::onMouseRelease);
     }
 
     @Override
     public void extractRenderState(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float delta) {
+        blockDropdown.setContext(guiGraphics);
+
+        if (submitButton != null && blockDropdown != null) {
+            submitButton.setY(blockDropdown.getDropdownBottomY() + 10);
+        }
+
         super.extractRenderState(guiGraphics, mouseX, mouseY, delta);
     }
 }
