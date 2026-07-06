@@ -2,7 +2,6 @@ package echen0719.blockfinder.client;
 
 import net.minecraft.client.KeyMapping;
 import net.minecraft.core.BlockPos;
-import net.minecraft.world.level.block.Blocks;
 
 import com.mojang.blaze3d.platform.InputConstants;
 

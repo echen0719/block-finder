@@ -2,10 +2,11 @@ package echen0719.blockfinder.screens;
 
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.Block;
 
 import echen0719.blockfinder.client.BlockScanner;
 import echen0719.blockfinder.utils.guiUtils;
@@ -13,12 +14,12 @@ import echen0719.blockfinder.utils.guiUtils;
 public class menuScreen extends Screen {
     // gui componenets
     private EditBox chunkSizeBox;
-    private EditBox blockBox;
+    private searchableDropdown blockDropdown;
     private Button submitButton;
 
     // static values
     private static String savedChunkSize = "";
-    private static String savedBlock = "";
+    private static Block savedBlock = null;
 
     public menuScreen() {
         super(Component.literal("Block Finder"));
@@ -26,18 +27,18 @@ public class menuScreen extends Screen {
 
     public void createInputs() {
         chunkSizeBox = guiUtils.createInputBox(this, 10, 10, 100, 20, "Chunk size");
-        blockBox = guiUtils.createInputBox(this, 10, 40, 100, 20, "Block ID");
-    
+        blockDropdown = new searchableDropdown(this, 10, 40, 150, 20, "Block ID");
+
         this.addRenderableWidget(chunkSizeBox);
-        this.addRenderableWidget(blockBox);
+        this.addRenderableWidget(blockDropdown);
     }
 
     public void createButtons() {
         submitButton = guiUtils.createButton(this, "Submit", 10, 70, 100, 20, button -> {
             String chunkSize = chunkSizeBox.getValue().trim();
-            String block = blockBox.getValue().trim();
+            Block block = blockDropdown.getSelectedBlock();
 
-            if (chunkSize.isEmpty() || block.isEmpty()) {
+            if (chunkSize.isEmpty() || block == null) {
 				System.out.println("Fill in the fields before scanning.");
                 return;
 	    	}
@@ -46,7 +47,12 @@ public class menuScreen extends Screen {
             savedBlock = block;
 
             try {
-                BlockScanner.scan(Integer.parseInt(chunkSize), Blocks.DEEPSLATE_DIAMOND_ORE);
+                if (false) {
+                    System.out.println("I'm not rendering air");
+                    return;
+                }
+
+                BlockScanner.scan(Integer.parseInt(chunkSize), block);
             }
             catch (NumberFormatException e) {
                 chunkSizeBox.setValue("");
@@ -65,7 +71,7 @@ public class menuScreen extends Screen {
         createButtons();
 
         chunkSizeBox.setValue(savedChunkSize);
-        blockBox.setValue(savedBlock);
+        // ...setValue(savedBlock);
     }
 
     @Override
