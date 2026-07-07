@@ -49,6 +49,18 @@ public class BlockDrawer {
 
     private static final RenderSystem.AutoStorageIndexBuffer indices = RenderSystem.getSequentialBuffer(PrimitiveTopology.LINES);
 
+    private static float r = 1.0f;
+    private static float g = 0f;
+    private static float b = 0f;
+    private static float a = 0.5f;
+
+    public static void setColor(Object[] color) {
+        r = ((Integer) color[0]).floatValue() / 255;
+        g = ((Integer) color[1]).floatValue() / 255;
+        b = ((Integer) color[2]).floatValue() / 255;
+        a = (Float) color[3];
+    }
+
     public static void initBuffer() {
         if (vertexBuffer != null) return;
 
@@ -67,11 +79,6 @@ public class BlockDrawer {
 
         float z1 = 0 - offset;
         float z2 = 1 + offset;
-
-        float r = 1.0f;
-        float g = 0.0f; 
-        float b = 0.0f;
-        float a = 0.5f; // using wildbeast42's values
 
         float lineWidth = 2.0f;
 
