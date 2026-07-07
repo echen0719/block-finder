@@ -66,7 +66,7 @@ public class BlockDrawer {
         }
     }
 
-    public static void initBuffer() {
+    private static void initBuffer() {
         if (vertexBuffer != null) return;
 
         // https://github.com/AdvancedXRay/XRay-Mod/blob/main/common/src/main/java/pro/mikey/xray/core/OutlineRender.java
@@ -165,7 +165,7 @@ public class BlockDrawer {
         }
     }
 
-    public static void drawEdge(BufferBuilder buffer, Matrix4f matrix, 
+    private static void drawEdge(BufferBuilder buffer, Matrix4f matrix, 
     float x1, float y1, float z1, float x2, float y2, float z2,
     float r, float g, float b, float a, float lineWidth) {
         

@@ -71,10 +71,6 @@ public class searchableDropdown extends AbstractWidget {
         this.context = context;
     }
 
-    public boolean isDropdownOpen() {
-        return isDropdownOpen;
-    }
-
     public int getDropdownBottomY() { // for shifting submit button
         if (isDropdownOpen && !filteredBlocks.isEmpty()) {
             return tableY + tableHeight;
@@ -94,7 +90,7 @@ public class searchableDropdown extends AbstractWidget {
         return searchBox;
     }
 
-    public void changeSearchTerm(String searchTerm) {
+    private void changeSearchTerm(String searchTerm) {
         if (searchTerm.isEmpty()) {
             filteredBlocks = new ArrayList<Block>(allBlocks); // if no term, then reset
         }
@@ -110,7 +106,7 @@ public class searchableDropdown extends AbstractWidget {
         recalculateDimensions();
     }
 
-    public void recalculateDimensions() {
+    private void recalculateDimensions() {
         tableX = this.getX();
         tableY = this.getY() + this.getHeight();
         tableWidth = this.getWidth();
@@ -252,7 +248,7 @@ public class searchableDropdown extends AbstractWidget {
         return false;
     }
 
-    public void closeDropdown() {
+    private void closeDropdown() {
         isDropdownOpen = false;
         if (searchBox != null) {
             searchBox.setVisible(false);

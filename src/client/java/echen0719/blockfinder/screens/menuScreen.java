@@ -3,7 +3,6 @@ package echen0719.blockfinder.screens;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
-import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;
