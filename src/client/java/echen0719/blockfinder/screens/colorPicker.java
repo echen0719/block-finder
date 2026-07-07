@@ -47,7 +47,14 @@ public class colorPicker extends AbstractWidget {
 
     // got kinda of lazy with this
     public Object[] getColor() {
-        return new Object[]{redValue, greenValue, blueValue, alphaValue};
+        setColor();
+
+        int r = Math.max(0, Math.min(255, redValue));
+        int g = Math.max(0, Math.min(255, greenValue));
+        int b = Math.max(0, Math.min(255, blueValue));
+        float a = Math.max(0.0f, Math.min(1.0f, alphaValue));
+
+        return new Object[]{r, g, b, a};
     }
 
     public void createInputs() {

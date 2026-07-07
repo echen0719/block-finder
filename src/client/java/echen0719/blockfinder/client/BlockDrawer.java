@@ -59,6 +59,11 @@ public class BlockDrawer {
         g = ((Integer) color[1]).floatValue() / 255;
         b = ((Integer) color[2]).floatValue() / 255;
         a = (Float) color[3];
+
+        if (vertexBuffer != null) {
+            vertexBuffer.close();
+            vertexBuffer = null;
+        }
     }
 
     public static void initBuffer() {
