@@ -107,6 +107,8 @@ public class menuScreen extends Screen {
             submitButton.setY(blockDropdown.getDropdownBottomY() + 10);
         }
 
+        blockDropdown.handleMouseDrag(mouseY);
+
         super.extractRenderState(guiGraphics, mouseX, mouseY, delta);
     }
 }

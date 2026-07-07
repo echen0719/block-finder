@@ -30,6 +30,7 @@ public class searchableDropdown extends AbstractWidget {
 
     // layout constants
     private int itemHeight = 15;
+    private int maxDisplayedItems = 7;
     private int scrollBarWidth = 5;
 
     // colors
@@ -101,12 +102,12 @@ public class searchableDropdown extends AbstractWidget {
             String term = searchTerm.toLowerCase();
 
             filteredBlocks = allBlocks.stream().filter(block -> 
-                block.getDescriptionId().toLowerCase().contains(term)
+                block.getName().getString().toLowerCase().contains(term)
             ).toList(); // filter
-
-            scrollPos = 0;
-            recalculateDimensions();
         }
+
+        scrollPos = 0;
+        recalculateDimensions();
     }
 
     public void recalculateDimensions() {
@@ -115,7 +116,7 @@ public class searchableDropdown extends AbstractWidget {
         tableWidth = this.getWidth();
 
         int availableHeight = parent.height - tableY - 10; // padding
-        int maximumHeight = filteredBlocks.size() * itemHeight;
+        int maximumHeight = Math.min(filteredBlocks.size(), maxDisplayedItems) * itemHeight;
 
         int rawHeight = Math.min(maximumHeight, availableHeight);
         tableHeight = Math.max(itemHeight, (rawHeight / itemHeight) * itemHeight);
@@ -135,7 +136,7 @@ public class searchableDropdown extends AbstractWidget {
     public void setSelectedBlock(Block block) {
         selectedBlock = block;
         if (block != null && searchBox != null) {
-            searchBox.setValue(block.getDescriptionId());
+            searchBox.setValue(block.getName().getString());
         }
     }
 
@@ -144,14 +145,14 @@ public class searchableDropdown extends AbstractWidget {
 
         int startRow = scrollPos / itemHeight;
         int maxDisplayed = tableHeight / itemHeight;
-        int visibleRows = Math.min(filteredBlocks.size() - startRow, maxDisplayed + 1);
+        int visibleRows = Math.min(filteredBlocks.size() - startRow, maxDisplayed);
 
         for (int i = 0; i < visibleRows; i++) {
             int rowIndex = startRow + i;
             if (rowIndex >= filteredBlocks.size()) break;
 
             Block block = filteredBlocks.get(rowIndex);
-            String inGameName = block.getDescriptionId();
+            String inGameName = block.getName().getString();
             int itemY = tableY + (i * itemHeight);
 
             // highlight
@@ -170,7 +171,7 @@ public class searchableDropdown extends AbstractWidget {
         if (totalRows <= maxDisplayed) return null;
 
         int scrollBarX = tableX + tableWidth - scrollBarWidth;
-        int scrollBarHeight = Math.max(15, (int)(tableHeight * ((float) maxDisplayed / totalRows)));
+        int scrollBarHeight = Math.max(5, (int)(tableHeight * ((float) maxDisplayed / totalRows)));
         int scrollableHeight = tableHeight - scrollBarHeight;
         
         int scrollBarY = tableY;
@@ -210,19 +211,20 @@ public class searchableDropdown extends AbstractWidget {
 
     public boolean onItemClick(double mouseX, double mouseY) {
         if (mouseX >= this.getX() && mouseX <= this.getX() + this.getWidth() && mouseY >= this.getY() && mouseY <= this.getY() + this.getHeight()) {
-            isDropdownOpen = !isDropdownOpen;
-            if (searchBox != null) {
-                searchBox.setVisible(isDropdownOpen);
-                searchBox.setFocused(isDropdownOpen);
-                if (!isDropdownOpen && selectedBlock != null) {
-                    searchBox.setValue(selectedBlock.getDescriptionId()); // displayed selected if dropdown is closed
-                }
-                else {
+            if (!isDropdownOpen) {
+                isDropdownOpen = true;
+                if (searchBox != null) {
+                    searchBox.setVisible(true);
+                    parent.setFocused(searchBox);
                     searchBox.setValue("");
+
                 }
+
+                recalculateDimensions();
+                return true;
             }
-            recalculateDimensions();
-            return true;
+
+            return false;
         }
 
         // if mouse is within the dropdown window
@@ -238,21 +240,29 @@ public class searchableDropdown extends AbstractWidget {
                 selectedBlock = filteredBlocks.get(clickedIndex);
             }
 
-            isDropdownOpen = false; // menu is closed after
-            if (searchBox != null) {
-                searchBox.setVisible(false);
-            }
-
+            closeDropdown();
             return true;
         }
 
         if (isDropdownOpen) { // clicking outside
-            isDropdownOpen = false;
-            if (searchBox != null) searchBox.setVisible(false);
+            closeDropdown();
             return true;
         }
 
         return false;
+    }
+
+    public void closeDropdown() {
+        isDropdownOpen = false;
+        if (searchBox != null) {
+            searchBox.setVisible(false);
+            if (parent.getFocused() == searchBox) {
+                parent.setFocused(null); // unfocus
+            }
+            if (selectedBlock != null) {
+                searchBox.setValue(selectedBlock.getName().getString()); // restore value
+            }
+        }
     }
 
     public void handleMouseDrag(double mouseY) {
@@ -297,7 +307,7 @@ public class searchableDropdown extends AbstractWidget {
 
         String displayedText = ""; // for dropdown text
         if (selectedBlock != null) {
-            displayedText = selectedBlock.getDescriptionId();
+            displayedText = selectedBlock.getName().getString();
         }
         else {
             displayedText = this.getMessage().getString();
