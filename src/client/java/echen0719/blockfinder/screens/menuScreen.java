@@ -17,7 +17,7 @@ import echen0719.blockfinder.utils.colorUtils;
 
 public class menuScreen extends Screen {
     // gui componenets
-    private EditBox chunkSizeBox;
+    private EditBox radiusSizeBox;
     private searchableDropdown blockDropdown;
     private Button submitButton;
 
@@ -30,7 +30,7 @@ public class menuScreen extends Screen {
     private int colorSize = 20;
 
     // static values
-    private static String savedChunkSize = "";
+    private static String savedBlockSize = "";
     private static Block savedBlock = null;
     private static Object[] savedColor = {255, 0, 0, 0.5f};
 
@@ -39,34 +39,34 @@ public class menuScreen extends Screen {
     }
 
     public void createInputs() {
-        chunkSizeBox = guiUtils.createInputBox(this, 10, 30, 100, 20, "Enter chunk size...");
+        radiusSizeBox = guiUtils.createInputBox(this, 10, 30, 100, 20, "Enter block radius...");
         blockDropdown = new searchableDropdown(this, 10, 60, 200, 20, "Block name");
 
-        this.addRenderableWidget(chunkSizeBox);
+        this.addRenderableWidget(radiusSizeBox);
         this.addRenderableWidget(blockDropdown);
         this.addRenderableWidget(blockDropdown.getSearchBox());
     }
 
     public void createButtons() {
         submitButton = guiUtils.createButton(this, "Submit", 10, 70, 100, 20, button -> {
-            String chunkSize = chunkSizeBox.getValue().trim();
+            String blockSize = radiusSizeBox.getValue().trim();
             Block block = blockDropdown.getSelectedBlock();
 
-            if (chunkSize.isEmpty() || block == null) {
+            if (blockSize.isEmpty() || block == null) {
 				System.out.println("Fill in the fields before scanning.");
                 return;
 	    	}
 
-            savedChunkSize = chunkSize;
+            savedBlockSize = blockSize;
             savedBlock = block;
             // colors
 
             try {
                 BlockDrawer.setColor(savedColor);
-                BlockScanner.scan(Integer.parseInt(chunkSize), block);
+                BlockScanner.scan(Integer.parseInt(blockSize), block);
             }
             catch (NumberFormatException e) {
-                chunkSizeBox.setValue("");
+                radiusSizeBox.setValue("");
             }
         });
 
@@ -107,7 +107,7 @@ public class menuScreen extends Screen {
         createInputs();
         createButtons();
 
-        chunkSizeBox.setValue(savedChunkSize);
+        radiusSizeBox.setValue(savedBlockSize);
         if (savedBlock != null) {
             blockDropdown.setSelectedBlock(savedBlock);
         }

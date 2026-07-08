@@ -1,6 +1,7 @@
 package echen0719.blockfinder.client;
 
 import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 
 import com.mojang.blaze3d.platform.InputConstants;
@@ -36,10 +37,26 @@ public class BlockFinderClient implements ClientModInitializer {
 			}
 		});
 
-		LevelRenderEvents.END_MAIN.register(context -> {
+		LevelRenderEvents.END_MAIN.register(context -> { // runs every frame
+			Minecraft client = Minecraft.getInstance();
+
 			if (BlockScanner.foundBlocks != null) {
+				int renderDistance = client.options.getEffectiveRenderDistance();
+
+				BlockPos playerPos = client.player.blockPosition();
+        		int playerChunkX = playerPos.getX() >> 4;
+        		int playerChunkZ = playerPos.getZ() >> 4;
+
 				synchronized (BlockScanner.foundBlocks) {
 					for (BlockPos position : BlockScanner.foundBlocks) {
+						int blockChunkX = position.getX() >> 4;
+                		int blockChunkZ = position.getZ() >> 4;
+
+						if (Math.abs(blockChunkX - playerChunkX) > renderDistance || 
+							Math.abs(blockChunkZ - playerChunkZ) > renderDistance) { // absolute peakness
+                    		continue; 
+                		}
+
 						BlockDrawer.drawOutline(context, position);
 					}
 				} // prevents ConcurrentModificationException
