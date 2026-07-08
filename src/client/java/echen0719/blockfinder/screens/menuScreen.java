@@ -44,8 +44,8 @@ public class menuScreen extends Screen {
 
     public void createInputs() {
         radiusSizeBox = guiUtils.createInputBox(this, 10, 30, 120, 20, "Enter block radius...");
-        minYBox = guiUtils.createInputBox(this, 140, 30, 30, 20, "Min Y");
-        maxYBox = guiUtils.createInputBox(this, 180, 30, 30, 20, "Max Y");
+        minYBox = guiUtils.createInputBox(this, 140, 30, 40, 20, "Min Y");
+        maxYBox = guiUtils.createInputBox(this, 190, 30, 40, 20, "Max Y");
         
         blockDropdown = new searchableDropdown(this, 10, 60, 200, 20, "Block name");
 
@@ -70,41 +70,40 @@ public class menuScreen extends Screen {
             savedBlockSize = blockSize;
             savedBlock = block;
             
-            int minY = -64;
-            int maxY = 319;
+            if (!minYBox.getValue().trim().isEmpty()) {
+                savedMinY = minYBox.getValue().trim();
+            }
+            else {
+                System.out.println("Fill in the fields before scanning.");
+            }
 
-            try {
-                if (!minYBox.getValue().trim().isEmpty()) {
-                    minY = Integer.parseInt(minYBox.getValue().trim());
-
-                    if (minY <= -64 && minY > 320) {
-                        minY = -64;
-                    }
-                }
-                else {
-                    System.out.println("Fill in the fields before scanning.");
-                }
-                if (!maxYBox.getValue().trim().isEmpty()) {
-                    maxY = Integer.parseInt(maxYBox.getValue().trim());
-
-                    if (maxY <= -64 && maxY > 320) {
-                        maxY = 319;
-                    }
-                }
-                else {
-                    System.out.println("Fill in the fields before scanning.");
-                }
-            } catch (NumberFormatException e) {
-                minYBox.setValue("");
-                maxYBox.setValue("");
+            if (!maxYBox.getValue().trim().isEmpty()) {
+                savedMaxY = maxYBox.getValue().trim();
+            }
+            else {
+                System.out.println("Fill in the fields before scanning.");
             }
 
             try {
+                int minY = Integer.parseInt(savedMinY);
+
+                if (minY <= -64 || minY > 320) {
+                    minY = -64;
+                }
+
+                int maxY = Integer.parseInt(savedMaxY);
+
+                if (maxY <= -64 || maxY > 320) {
+                    maxY = 319;
+                }
+
                 BlockDrawer.setColor(savedColor);
                 BlockScanner.scan(Integer.parseInt(blockSize), block, minY, maxY);
-            }
+            } 
             catch (NumberFormatException e) {
                 radiusSizeBox.setValue("");
+                minYBox.setValue("");
+                maxYBox.setValue("");
             }
         });
 
@@ -120,7 +119,16 @@ public class menuScreen extends Screen {
     private boolean onMouseClick(Screen screen, MouseButtonEvent event, boolean consumed) {
         if (event.button() == 0) {
             if (event.x() >= colorStartX && event.x() <= colorStartX + colorSize &&
-                event.y() >= colorStartY && event.y() <= colorStartY + colorSize) {
+            event.y() >= colorStartY && event.y() <= colorStartY + colorSize) {
+                // save before going to new screen
+
+                savedBlockSize = radiusSizeBox.getValue();
+                savedMinY = minYBox.getValue();
+                savedMaxY = maxYBox.getValue();
+
+                if (blockDropdown.getSelectedBlock() != null) {
+                    savedBlock = blockDropdown.getSelectedBlock();
+                }
                 
                 Minecraft.getInstance().setScreenAndShow(new colorPicker(this, savedColor));
                 return true;
