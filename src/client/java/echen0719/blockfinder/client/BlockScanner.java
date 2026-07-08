@@ -22,7 +22,7 @@ public class BlockScanner {
     private static boolean isScanning = false;
     private static ExecutorService executor = Executors.newCachedThreadPool();
 
-    public static void scan(int blockRadius, Block targetBlock) {
+    public static void scan(int blockRadius, Block targetBlock, int minY, int maxY) {
         System.out.print("Started the scan!");
 
         if (isScanning || client.level == null || client.player == null) {
@@ -62,15 +62,15 @@ public class BlockScanner {
 
         executor.submit(() -> {
             for (LevelChunk chunk : chunksToScan) {
-                scanInChunk(chunk, targetBlock, playerCenter, blockRadius);
+                scanInChunk(chunk, targetBlock, playerCenter, blockRadius, minY, maxY);
             }
 
             isScanning = false;
-            System.out.println("Completed! Scanned " + foundBlocks.size() + " blocks.");
+            System.out.println("Completed! Found " + foundBlocks.size() + " blocks.");
         });
     }
 
-    public static void scanInChunk(LevelChunk chunk, Block targetBlock, BlockPos playerCenter, int blockRadius) {
+    public static void scanInChunk(LevelChunk chunk, Block targetBlock, BlockPos playerCenter, int blockRadius, int minY, int maxY) {
         int chunkMinX = chunk.getPos().getMinBlockX();
         int chunkMinZ = chunk.getPos().getMinBlockZ();
 
@@ -80,7 +80,7 @@ public class BlockScanner {
         // the docs say that this is better when performing many computations at a time
         BlockPos.MutableBlockPos position = new BlockPos.MutableBlockPos();
 
-        for (int y = -64; y < 320; y++) { // 1.18+ versions for now
+        for (int y = minY; y <= maxY; y++) { // this is like n^3, idk what else to do though
             for (int x = 0; x < 16; x++) {
                 for (int z = 0; z < 16; z++) {
                     int worldX = chunkMinX + x;

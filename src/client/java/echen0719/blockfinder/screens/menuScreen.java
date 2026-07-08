@@ -18,6 +18,8 @@ import echen0719.blockfinder.utils.colorUtils;
 public class menuScreen extends Screen {
     // gui componenets
     private EditBox radiusSizeBox;
+    private EditBox minYBox;
+    private EditBox maxYBox;
     private searchableDropdown blockDropdown;
     private Button submitButton;
 
@@ -31,6 +33,8 @@ public class menuScreen extends Screen {
 
     // static values
     private static String savedBlockSize = "";
+    private static String savedMinY = "";
+    private static String savedMaxY = "";
     private static Block savedBlock = null;
     private static Object[] savedColor = {255, 0, 0, 0.5f};
 
@@ -39,10 +43,16 @@ public class menuScreen extends Screen {
     }
 
     public void createInputs() {
-        radiusSizeBox = guiUtils.createInputBox(this, 10, 30, 100, 20, "Enter block radius...");
+        radiusSizeBox = guiUtils.createInputBox(this, 10, 30, 120, 20, "Enter block radius...");
+        minYBox = guiUtils.createInputBox(this, 140, 30, 30, 20, "Min Y");
+        maxYBox = guiUtils.createInputBox(this, 180, 30, 30, 20, "Max Y");
+        
         blockDropdown = new searchableDropdown(this, 10, 60, 200, 20, "Block name");
 
         this.addRenderableWidget(radiusSizeBox);
+        this.addRenderableWidget(minYBox);
+        this.addRenderableWidget(maxYBox);
+
         this.addRenderableWidget(blockDropdown);
         this.addRenderableWidget(blockDropdown.getSearchBox());
     }
@@ -59,11 +69,39 @@ public class menuScreen extends Screen {
 
             savedBlockSize = blockSize;
             savedBlock = block;
-            // colors
+            
+            int minY = -64;
+            int maxY = 319;
+
+            try {
+                if (!minYBox.getValue().trim().isEmpty()) {
+                    minY = Integer.parseInt(minYBox.getValue().trim());
+
+                    if (minY <= -64 && minY > 320) {
+                        minY = -64;
+                    }
+                }
+                else {
+                    System.out.println("Fill in the fields before scanning.");
+                }
+                if (!maxYBox.getValue().trim().isEmpty()) {
+                    maxY = Integer.parseInt(maxYBox.getValue().trim());
+
+                    if (maxY <= -64 && maxY > 320) {
+                        maxY = 319;
+                    }
+                }
+                else {
+                    System.out.println("Fill in the fields before scanning.");
+                }
+            } catch (NumberFormatException e) {
+                minYBox.setValue("");
+                maxYBox.setValue("");
+            }
 
             try {
                 BlockDrawer.setColor(savedColor);
-                BlockScanner.scan(Integer.parseInt(blockSize), block);
+                BlockScanner.scan(Integer.parseInt(blockSize), block, minY, maxY);
             }
             catch (NumberFormatException e) {
                 radiusSizeBox.setValue("");
@@ -108,6 +146,9 @@ public class menuScreen extends Screen {
         createButtons();
 
         radiusSizeBox.setValue(savedBlockSize);
+        minYBox.setValue(savedMinY);
+        maxYBox.setValue(savedMaxY);
+
         if (savedBlock != null) {
             blockDropdown.setSelectedBlock(savedBlock);
         }
