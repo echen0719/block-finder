@@ -1,5 +1,6 @@
 package echen0719.blockfinder.screens;
 
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
@@ -12,42 +13,38 @@ import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents;
 import echen0719.blockfinder.client.BlockDrawer;
 import echen0719.blockfinder.client.BlockScanner;
 import echen0719.blockfinder.utils.guiUtils;
+import echen0719.blockfinder.utils.colorUtils;
 
 public class menuScreen extends Screen {
     // gui componenets
     private EditBox chunkSizeBox;
     private searchableDropdown blockDropdown;
-    private colorPicker rgbaPicker;
     private Button submitButton;
-    EditBox[] boxes;
+
+    // colors
+    private final int white = 0xFFFFFFFF;
+
+    // layout constants
+    private int colorStartX = 220;
+    private int colorStartY = 60;
+    private int colorSize = 20;
 
     // static values
     private static String savedChunkSize = "";
     private static Block savedBlock = null;
-    private static String savedRed = "";
-    private static String savedGreen = "";
-    private static String savedBlue = "";
-    private static String savedAlpha = "";
+    private static Object[] savedColor = {255, 0, 0, 0.5f};
 
     public menuScreen() {
         super(Component.literal("Block Finder"));
     }
 
     public void createInputs() {
-        chunkSizeBox = guiUtils.createInputBox(this, 10, 10, 100, 20, "Enter chunk size...");
-        blockDropdown = new searchableDropdown(this, 10, 40, 200, 20, "Block name");
-        rgbaPicker = new colorPicker(this, 250, 10, 50, 120, "RGBA picker");
+        chunkSizeBox = guiUtils.createInputBox(this, 10, 30, 100, 20, "Enter chunk size...");
+        blockDropdown = new searchableDropdown(this, 10, 60, 200, 20, "Block name");
 
         this.addRenderableWidget(chunkSizeBox);
         this.addRenderableWidget(blockDropdown);
         this.addRenderableWidget(blockDropdown.getSearchBox());
-
-        this.addRenderableWidget(rgbaPicker);
-        
-        boxes = rgbaPicker.getInputBoxes();
-        for (EditBox box : boxes) {
-            this.addRenderableWidget(box);
-        }
     }
 
     public void createButtons() {
@@ -62,13 +59,10 @@ public class menuScreen extends Screen {
 
             savedChunkSize = chunkSize;
             savedBlock = block;
-            savedRed = boxes[0].getValue().trim();
-            savedGreen = boxes[1].getValue().trim();
-            savedBlue = boxes[2].getValue().trim();
-            savedAlpha = boxes[3].getValue().trim();
+            // colors
 
             try {
-                BlockDrawer.setColor(rgbaPicker.getColor());
+                BlockDrawer.setColor(savedColor);
                 BlockScanner.scan(Integer.parseInt(chunkSize), block);
             }
             catch (NumberFormatException e) {
@@ -87,10 +81,12 @@ public class menuScreen extends Screen {
 
     private boolean onMouseClick(Screen screen, MouseButtonEvent event, boolean consumed) {
         if (event.button() == 0) {
-            if (rgbaPicker.onMouseClick(event.x(), event.y())) {
+            if (event.x() >= colorStartX && event.x() <= colorStartX + colorSize &&
+                event.y() >= colorStartY && event.y() <= colorStartY + colorSize) {
+                
+                Minecraft.getInstance().setScreenAndShow(new colorPicker(this, savedColor));
                 return true;
             }
-
             return blockDropdown.onItemClick(event.x(), event.y()) || consumed;
         }
         return consumed;
@@ -115,10 +111,6 @@ public class menuScreen extends Screen {
         if (savedBlock != null) {
             blockDropdown.setSelectedBlock(savedBlock);
         }
-        boxes[0].setValue(savedRed);
-        boxes[1].setValue(savedGreen);
-        boxes[2].setValue(savedBlue);
-        boxes[3].setValue(savedAlpha);
 
         ScreenMouseEvents.afterMouseScroll(this).register((ScreenMouseEvents.AfterMouseScroll) this::onMouseScroll);
         ScreenMouseEvents.afterMouseClick(this).register((ScreenMouseEvents.AfterMouseClick) this::onMouseClick);
@@ -126,9 +118,10 @@ public class menuScreen extends Screen {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float delta) {
-        blockDropdown.setContext(guiGraphics);
-        rgbaPicker.setContext(guiGraphics);
+    public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+        super.extractRenderState(context, mouseX, mouseY, delta);
+        
+        blockDropdown.setContext(context);
 
         if (submitButton != null && blockDropdown != null) {
             submitButton.setY(blockDropdown.getDropdownBottomY() + 10);
@@ -136,6 +129,10 @@ public class menuScreen extends Screen {
 
         blockDropdown.handleMouseDrag(mouseY);
 
-        super.extractRenderState(guiGraphics, mouseX, mouseY, delta);
+        context.centeredText(this.font, Component.literal("Block Finder"), this.width / 2, 10, white);
+
+        // color picker
+        context.fill(colorStartX - 1, colorStartY - 1, colorStartX + colorSize + 1, colorStartY + colorSize + 1, 0xFF000000);
+        context.fill(colorStartX, colorStartY, colorStartX + colorSize, colorStartY + colorSize, colorUtils.arrayToInt(savedColor));
     }
 }
