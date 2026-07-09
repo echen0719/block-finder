@@ -10,6 +10,7 @@ import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,7 +30,7 @@ public class searchableDropdown extends AbstractWidget {
     private int tableHeight;
 
     // layout constants
-    private int itemHeight = 15;
+    private int itemHeight = 20;
     private int maxDisplayedItems = 7;
     private int scrollBarWidth = 5;
 
@@ -107,6 +108,24 @@ public class searchableDropdown extends AbstractWidget {
     }
 
     private void recalculateDimensions() {
+        int maxWidth = 0;
+
+        for (Block block : filteredBlocks) {
+            int textWidth = client.font.width(block.getName().getString());
+            if (textWidth > maxWidth) {
+                maxWidth = textWidth;
+            }
+        }
+
+        maxWidth += 40;
+
+        if (this.getWidth() != maxWidth) {
+            this.setWidth(maxWidth);
+            if (searchBox != null) {
+                searchBox.setWidth(maxWidth);
+            }
+        }
+
         tableX = this.getX();
         tableY = this.getY() + this.getHeight();
         tableWidth = this.getWidth();
@@ -156,7 +175,13 @@ public class searchableDropdown extends AbstractWidget {
                 context.fill(tableX, itemY, tableX + tableWidth, itemY + itemHeight, lightGray);
             }
 
-            context.text(client.font, inGameName, tableX + 5, itemY + 3, white);
+            int iconX = tableX + 2; // some little padding
+            int iconY = itemY + 2;
+
+            ItemStack stack = new ItemStack(block);
+            context.item(stack, iconX, iconY); // seems to draw icon
+
+            context.text(client.font, inGameName, tableX + 25, itemY + (itemHeight - 8) / 2, white);
         }
     }
 

@@ -27,7 +27,7 @@ public class menuScreen extends Screen {
     private final int white = 0xFFFFFFFF;
 
     // layout constants
-    private int colorStartX = 220;
+    private int colorStartX = 250;
     private int colorStartY = 60;
     private int colorSize = 20;
 
@@ -50,6 +50,7 @@ public class menuScreen extends Screen {
         blockDropdown = new searchableDropdown(this, 10, 60, 200, 20, "Block name");
 
         this.addRenderableWidget(radiusSizeBox);
+
         this.addRenderableWidget(minYBox);
         this.addRenderableWidget(maxYBox);
 
@@ -181,6 +182,7 @@ public class menuScreen extends Screen {
         context.centeredText(this.font, Component.literal("Block Finder"), this.width / 2, 10, white);
 
         // color picker
+        colorStartX = blockDropdown.getX() + blockDropdown.getWidth() + 10;
         context.fill(colorStartX - 1, colorStartY - 1, colorStartX + colorSize + 1, colorStartY + colorSize + 1, 0xFF000000);
         context.fill(colorStartX, colorStartY, colorStartX + colorSize, colorStartY + colorSize, colorUtils.arrayToInt(savedColor));
     }
