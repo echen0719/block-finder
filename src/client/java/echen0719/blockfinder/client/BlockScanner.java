@@ -17,23 +17,18 @@ import java.util.concurrent.ExecutorService;
 public class BlockScanner {
     private static final Minecraft client = Minecraft.getInstance();
 
-    public static List<BlockPos> foundBlocks = Collections.synchronizedList(new ArrayList<>()); // for concurrent scanning safety
-
-    private static boolean isScanning = false;
+    public static java.util.Map<Block, List<BlockPos>> foundBlocks = new java.util.concurrent.ConcurrentHashMap<>(); // for concurrent scanning safety
     private static ExecutorService executor = Executors.newCachedThreadPool();
 
     public static void scan(int blockRadius, Block targetBlock, int minY, int maxY) {
         System.out.print("Started the scan!");
 
-        if (isScanning || client.level == null || client.player == null) {
+        if (client.level == null || client.player == null) {
             System.out.print("Ended the scan!");
             return;
         }
 
-        isScanning = true;
-        synchronized (foundBlocks) {
-            foundBlocks.clear();
-        }
+        foundBlocks.put(targetBlock, java.util.Collections.synchronizedList(new java.util.ArrayList<>()));
 
         BlockPos playerCenter = client.player.blockPosition();
         int playerX = playerCenter.getX();
@@ -65,8 +60,8 @@ public class BlockScanner {
                 scanInChunk(chunk, targetBlock, playerCenter, blockRadius, minY, maxY);
             }
 
-            isScanning = false;
-            System.out.println("Completed! Found " + foundBlocks.size() + " blocks.");
+            int totalFound = foundBlocks.values().stream().mapToInt(List::size).sum();
+            System.out.println("Completed! Found " + totalFound + " blocks.");
         });
     }
 
@@ -94,7 +89,10 @@ public class BlockScanner {
                     BlockState state = chunk.getBlockState(position);
 
                     if (state.is(targetBlock)) {
-                        foundBlocks.add(position.immutable()); // world position and thread safe?
+                        List<BlockPos> list = foundBlocks.get(targetBlock);
+                        if (list != null) {
+                            list.add(position.immutable());
+                        } // world position and thread safe?
                     }
                 }
             }
@@ -102,4 +100,8 @@ public class BlockScanner {
 
         System.out.println("Done for " + chunk.getPos().x() + ", " + chunk.getPos().z() + "!");
     }
+
+    public static void remove(Block block) {
+        foundBlocks.remove(block);
+    }   
 }

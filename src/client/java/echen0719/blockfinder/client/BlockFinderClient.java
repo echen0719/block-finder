@@ -15,6 +15,8 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 
+import echen0719.blockfinder.screens.blockConfig;
+
 public class BlockFinderClient implements ClientModInitializer {
 	public static menuScreen mainScreen;
 
@@ -47,19 +49,26 @@ public class BlockFinderClient implements ClientModInitializer {
         		int playerChunkX = playerPos.getX() >> 4;
         		int playerChunkZ = playerPos.getZ() >> 4;
 
-				synchronized (BlockScanner.foundBlocks) {
-					for (BlockPos position : BlockScanner.foundBlocks) {
-						int blockChunkX = position.getX() >> 4;
-                		int blockChunkZ = position.getZ() >> 4;
+				for (blockConfig config : menuScreen.getActivePool()) {
+					java.util.List<BlockPos> positions = BlockScanner.foundBlocks.get(config.block);
+        			if (positions == null) continue;
 
-						if (Math.abs(blockChunkX - playerChunkX) > renderDistance || 
-							Math.abs(blockChunkZ - playerChunkZ) > renderDistance) { // absolute peakness
-                    		continue; 
-                		}
+					BlockDrawer.setColor(config.color);
 
-						BlockDrawer.drawOutline(context, position);
-					}
-				} // prevents ConcurrentModificationException
+					synchronized (positions) {
+						for (BlockPos position : positions) {
+							int blockChunkX = position.getX() >> 4;
+							int blockChunkZ = position.getZ() >> 4;
+
+							if (Math.abs(blockChunkX - playerChunkX) > renderDistance || 
+								Math.abs(blockChunkZ - playerChunkZ) > renderDistance) { // absolute peakness
+								continue; 
+							}
+
+							BlockDrawer.drawOutline(context, position);
+						}
+					} // prevents ConcurrentModificationException
+				}
             }
 		});
 	}

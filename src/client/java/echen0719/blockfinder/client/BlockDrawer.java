@@ -66,6 +66,14 @@ public class BlockDrawer {
         }
     }
 
+    public static void clear() {
+        if (vertexBuffer != null) {
+            vertexBuffer.close();
+            vertexBuffer = null;
+        }
+        indexCount = 0;
+    }
+
     private static void initBuffer() {
         if (vertexBuffer != null) return;
 
