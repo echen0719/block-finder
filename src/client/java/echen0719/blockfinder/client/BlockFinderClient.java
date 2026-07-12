@@ -3,6 +3,7 @@ package echen0719.blockfinder.client;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.resources.Identifier;
 
 import com.mojang.blaze3d.platform.InputConstants;
 
@@ -21,7 +22,9 @@ public class BlockFinderClient implements ClientModInitializer {
 	public static menuScreen mainScreen;
 
 	public static KeyMapping scanKey;
-	private static final KeyMapping.Category category = null;
+	private static final KeyMapping.Category category = KeyMapping.Category.register(
+		Identifier.fromNamespaceAndPath("blockfinder", "menu")
+	);
 
 	@Override
 	public void onInitializeClient() {
