@@ -3,15 +3,15 @@
 	"id": "block-finder",
 	"version": "${version}",
 	"name": "Block Finder",
-	"description": "This is an example description! Tell everyone what your mod is about!",
+	"description": "Find blocks in a singleplayer or multiplayer world",
 	"authors": [
-		"Me!"
+		"echen0719"
 	],
 	"contact": {
-		"homepage": "https://fabricmc.net/",
-		"sources": "https://github.com/FabricMC/fabric-example-mod"
+		"homepage": "https://echen0719.github.io/",
+		"sources": "https://github.com/echen0719/block-finder"
 	},
-	"license": "CC0-1.0",
+	"license": "CC BY-NC-SA 4.0",
 	"icon": "assets/block-finder/icon.png",
 	"environment": "*",
 	"entrypoints": {
