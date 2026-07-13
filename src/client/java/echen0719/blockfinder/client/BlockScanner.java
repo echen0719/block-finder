@@ -18,7 +18,12 @@ public class BlockScanner {
     private static final Minecraft client = Minecraft.getInstance();
 
     public static java.util.Map<Block, List<BlockPos>> foundBlocks = new java.util.concurrent.ConcurrentHashMap<>(); // for concurrent scanning safety
-    private static ExecutorService executor = Executors.newCachedThreadPool();
+    private static ExecutorService executor = Executors.newCachedThreadPool(runnable -> {
+        Thread thread = new Thread(runnable);
+        thread.setDaemon(true); // jvm exits when daemon = true
+        thread.setName("block-scanner");
+        return thread;
+    });
 
     // auto rescan states
     public static boolean autoRescan = false;
