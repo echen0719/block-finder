@@ -23,6 +23,7 @@ import com.mojang.blaze3d.systems.RenderSystem;
 
 import java.util.OptionalDouble;
 import java.util.Optional;
+import java.util.List;
 
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
@@ -128,54 +129,50 @@ public class BlockDrawer {
         }
     }
 
-    public static void drawOutline(LevelRenderContext context, BlockPos position) {
-        if (client.level == null) return;
-
+    public static void drawOutline(LevelRenderContext context, List<BlockPos> positions) {
+        if (client.level == null || positions == null || positions.isEmpty()) return;
         initBuffer();
 
         PoseStack matrices = context.poseStack(); // i assume this is close to CFrames in Roblox
         if (matrices == null) return;
 
         Vec3 cameraPosition = client.gameRenderer.mainCamera().position();
-
         Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
-        modelViewStack.pushMatrix();
-
-        matrices.pushPose();
-        modelViewStack.translate(
-            (float)(position.getX() - cameraPosition.x), 
-            (float)(position.getY() - cameraPosition.y), 
-            (float)(position.getZ() - cameraPosition.z)
-        );
-        
-        Matrix4f matrix = new Matrix4f(modelViewStack); // don't know what this does
-        modelViewStack.popMatrix();
-
-        GpuBufferSlice[] gpubufferslice = RenderSystem.getDynamicUniforms().writeTransforms(
-            new DynamicUniforms.Transform(
-                matrix,
-                new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), 
-                new Vector3f(), 
-                new Matrix4f()
-            )
-        );
 
         var colorTextureView = client.gameRenderer.mainRenderTarget().getColorTextureView();
         var depthTextureView = client.gameRenderer.mainRenderTarget().getDepthTextureView();
 
-        try (RenderPass renderPass = RenderSystem.getDevice().
-            createCommandEncoder().createRenderPass(() -> 
-            "blockfinder_outline", colorTextureView, 
-            Optional.empty(), depthTextureView, OptionalDouble.empty())) {
-            
+        try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> 
+        "blockfinder_outline", colorTextureView, Optional.empty(), depthTextureView, OptionalDouble.empty())) { 
             RenderSystem.bindDefaultUniforms(renderPass);
 
             renderPass.setVertexBuffer(0, vertexBuffer.slice());
             renderPass.setIndexBuffer(indices.getBuffer(indexCount), indices.type());
-            renderPass.setUniform("DynamicTransforms", gpubufferslice[0]);
             renderPass.setPipeline(seeThroughLines);
 
-            renderPass.drawIndexed(indexCount, 1, 0, 0, 0);
+            for (BlockPos position : positions) {
+                modelViewStack.pushMatrix();
+                modelViewStack.translate(
+                    (float)(position.getX() - cameraPosition.x), 
+                    (float)(position.getY() - cameraPosition.y), 
+                    (float)(position.getZ() - cameraPosition.z)
+                );
+                
+                Matrix4f matrix = new Matrix4f(modelViewStack); // don't know what this does
+                modelViewStack.popMatrix();
+
+                GpuBufferSlice[] gpubufferslice = RenderSystem.getDynamicUniforms().writeTransforms(
+                    new DynamicUniforms.Transform(
+                        matrix,
+                        new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), 
+                        new Vector3f(), 
+                        new Matrix4f()
+                    )
+                );
+
+                renderPass.setUniform("DynamicTransforms", gpubufferslice[0]);
+                renderPass.drawIndexed(indexCount, 1, 0, 0, 0);
+            }
         }
         catch (Exception e) {
             e.printStackTrace();

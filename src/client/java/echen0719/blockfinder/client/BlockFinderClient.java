@@ -9,6 +9,9 @@ import com.mojang.blaze3d.platform.InputConstants;
 
 import echen0719.blockfinder.screens.menuScreen;
 
+import java.util.List;
+import java.util.ArrayList;
+
 import org.lwjgl.glfw.GLFW;
 
 import net.fabricmc.api.ClientModInitializer;
@@ -85,19 +88,22 @@ public class BlockFinderClient implements ClientModInitializer {
 
 					BlockDrawer.setColor(config.color);
 
+					List<BlockPos> visiblePositions = new ArrayList<>();
 					synchronized (positions) {
 						for (BlockPos position : positions) {
 							int blockChunkX = position.getX() >> 4;
 							int blockChunkZ = position.getZ() >> 4;
 
-							if (Math.abs(blockChunkX - playerChunkX) > renderDistance || 
-								Math.abs(blockChunkZ - playerChunkZ) > renderDistance) { // absolute peakness
-								continue; 
+							if (Math.abs(blockChunkX - playerChunkX) <= renderDistance && 
+							Math.abs(blockChunkZ - playerChunkZ) <= renderDistance) { // absolute peakness
+								visiblePositions.add(position);
 							}
-
-							BlockDrawer.drawOutline(context, position);
 						}
 					} // prevents ConcurrentModificationException
+
+					if (!visiblePositions.isEmpty()) {
+						BlockDrawer.drawOutline(context, visiblePositions);
+					}
 				}
             }
 		});
