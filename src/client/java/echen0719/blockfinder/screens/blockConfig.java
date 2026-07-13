@@ -5,8 +5,8 @@ import net.minecraft.world.level.block.Block;
 public class blockConfig {
     public final Block block;
     public String radius = "";
-    public String minY = "";
-    public String maxY = "";
+    public String minY = "-64";
+    public String maxY = "319";
     public Object[] color = {255, 0, 0, 0.5f};
 
     public blockConfig(Block block) {
