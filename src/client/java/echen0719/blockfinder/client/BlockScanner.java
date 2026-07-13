@@ -20,14 +20,22 @@ public class BlockScanner {
     public static java.util.Map<Block, List<BlockPos>> foundBlocks = new java.util.concurrent.ConcurrentHashMap<>(); // for concurrent scanning safety
     private static ExecutorService executor = Executors.newCachedThreadPool();
 
-    public static void scan(int blockRadius, Block targetBlock, int minY, int maxY) {
-        System.out.print("Started the scan!");
+    // auto rescan states
+    public static boolean autoRescan = false;
+    public static boolean autoRescanReady = false;
+    public static BlockPos lastPlayerCenter = null;
+    public static boolean isScanning = false;
 
-        if (client.level == null || client.player == null) {
+    public static void scan(int blockRadius, Block targetBlock, int minY, int maxY) {
+        if (client.level == null || client.player == null || isScanning) {
             System.out.print("Ended the scan!");
             return;
         }
 
+        isScanning = true;
+        System.out.print("Started the scan!");
+
+        lastPlayerCenter = client.player.blockPosition();
         foundBlocks.put(targetBlock, java.util.Collections.synchronizedList(new java.util.ArrayList<>()));
 
         BlockPos playerCenter = client.player.blockPosition();
@@ -44,7 +52,7 @@ public class BlockScanner {
 
         List<LevelChunk> chunksToScan = new ArrayList<>();
 
-        for (int x = minChunkX; x <= maxChunkX; x++) {
+        for (int x = minChunkX; x <= maxChunkX; x++) { // should improve n^3 to something
             for (int z = minChunkZ; z <= maxChunkZ; z++) {
                 if (client.level.hasChunk(x, z)) {
                     LevelChunk chunk = client.level.getChunk(x, z);
@@ -62,6 +70,8 @@ public class BlockScanner {
 
             int totalFound = foundBlocks.values().stream().mapToInt(List::size).sum();
             System.out.println("Completed! Found " + totalFound + " blocks.");
+
+            isScanning = false;
         });
     }
 

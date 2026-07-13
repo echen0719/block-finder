@@ -6,6 +6,7 @@ import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.Checkbox; // HOW DID I NOT KNOW THIS EXISTED?!
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.item.ItemStack;
@@ -25,6 +26,7 @@ public class menuScreen extends Screen {
     private searchableDropdown blockDropdown;
     private Button submitButton;
     private Button clearButton;
+    private Checkbox autoRescanCheckbox;
 
     // colors
     private static int white = 0xFFFFFFFF;
@@ -54,10 +56,16 @@ public class menuScreen extends Screen {
         
         blockDropdown = new searchableDropdown(this, 10, 30, 200, 20, "Block name");
 
+        autoRescanCheckbox = guiUtils.createCheckbox(this, "Auto Rescan", 240, 30, BlockScanner.autoRescan, (checkbox, selected) -> {
+            BlockScanner.autoRescan = selected;
+        });
+
         this.addRenderableWidget(radiusSizeBox);
 
         this.addRenderableWidget(minYBox);
         this.addRenderableWidget(maxYBox);
+
+        this.addRenderableWidget(autoRescanCheckbox);
 
         this.addRenderableWidget(blockDropdown);
         this.addRenderableWidget(blockDropdown.getSearchBox());
@@ -66,6 +74,8 @@ public class menuScreen extends Screen {
     public void createButtons() {
         submitButton = guiUtils.createButton(this, "Submit", this.width / 2 - 110, this.height - 40, 100, 20, button -> {
             if (activePool.isEmpty()) return;
+
+            BlockScanner.autoRescanReady = true;
 
             for (blockConfig config : activePool) {
                 try {
@@ -91,7 +101,9 @@ public class menuScreen extends Screen {
             activePool.clear();
             selectedConfig = null;
             BlockDrawer.clear();
+            
             BlockScanner.foundBlocks.clear();
+            BlockScanner.autoRescanReady = false;
         });
 
         this.addRenderableWidget(submitButton);
@@ -317,6 +329,11 @@ public class menuScreen extends Screen {
         radiusSizeBox.setVisible(usingSubmenu); // seen in submenu
         minYBox.setVisible(usingSubmenu);
         maxYBox.setVisible(usingSubmenu);
+        
+        // these are hidden when submenu opens
+        if (autoRescanCheckbox != null) {
+            autoRescanCheckbox.visible = !usingSubmenu;
+        }
 
         if (submitButton != null) {
             submitButton.visible = !usingSubmenu;

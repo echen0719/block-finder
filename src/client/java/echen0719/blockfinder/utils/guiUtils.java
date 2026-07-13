@@ -1,6 +1,8 @@
 package echen0719.blockfinder.utils;
 
 import net.minecraft.client.gui.components.Button;
+import net.minecraft.client.gui.components.Checkbox;
+import net.minecraft.client.gui.components.Checkbox.Builder;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.network.chat.Component;
@@ -15,5 +17,11 @@ public class guiUtils {
     public static Button createButton(Screen screen, String label, int x, int y, int width, int height, Button.OnPress action) {
         Button button = Button.builder(Component.literal(label), action).bounds(x, y, width, height).build();
         return button;
+    }
+
+    public static Checkbox createCheckbox(Screen screen, String label, int x, int y, boolean value, Checkbox.OnValueChange onValueChange) {
+        Builder build = Checkbox.builder(Component.literal(label), screen.getFont()).pos(x, y);
+        Checkbox checkbox = build.selected(value).onValueChange(onValueChange).build();
+        return checkbox;
     }
 }

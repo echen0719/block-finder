@@ -35,11 +35,40 @@ public class BlockFinderClient implements ClientModInitializer {
 			category
 		));
 
+		// runs every tick or 20x/s
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			while (scanKey.consumeClick()) {
 				mainScreen = new menuScreen();
 				client.setScreenAndShow(mainScreen);
 			}
+
+			if (BlockScanner.autoRescan && BlockScanner.autoRescanReady && client.player != null &&
+			!BlockScanner.isScanning && BlockScanner.lastPlayerCenter != null) {
+				BlockPos currentPos = client.player.blockPosition();
+				
+				// check to make sure coords changed before scanning
+				if (!currentPos.equals(BlockScanner.lastPlayerCenter)) {
+					BlockDrawer.clear();
+
+					// get values to scan
+					for (blockConfig config : menuScreen.getActivePool()) {
+						try {
+							int radius = Integer.parseInt(config.radius.trim());
+							int minY = Integer.parseInt(config.minY.trim());
+							int maxY = Integer.parseInt(config.maxY.trim());
+
+							if (minY <= -64 || minY > 320) minY = -64;
+							if (maxY <= -64 || maxY > 320) maxY = 319;
+
+							BlockDrawer.setColor(config.color);
+							BlockScanner.scan(radius, config.block, minY, maxY);
+						} 
+						catch (NumberFormatException e) {
+							// System.out.println("Bruh");
+						}
+            		}
+				}
+			} // don't know if this will lag yet
 		});
 
 		LevelRenderEvents.END_MAIN.register(context -> { // runs every frame
