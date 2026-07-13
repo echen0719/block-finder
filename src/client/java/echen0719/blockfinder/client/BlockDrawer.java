@@ -55,10 +55,19 @@ public class BlockDrawer {
     private static float a = 0.5f;
 
     public static void setColor(Object[] color) {
-        r = ((Integer) color[0]).floatValue() / 255;
-        g = ((Integer) color[1]).floatValue() / 255;
-        b = ((Integer) color[2]).floatValue() / 255;
-        a = (Float) color[3];
+        float newR = ((Integer) color[0]).floatValue() / 255;
+        float newG = ((Integer) color[1]).floatValue() / 255;
+        float newB = ((Integer) color[2]).floatValue() / 255;
+        float newA = (Float) color[3];
+
+        if (r == newR && g == newG && b == newB && a == newA) {
+            return; 
+        } // don't refresh drawing if color did not change
+
+        r = newR;
+        g = newG;
+        b = newB;
+        a = newA;
 
         if (vertexBuffer != null) {
             vertexBuffer.close();

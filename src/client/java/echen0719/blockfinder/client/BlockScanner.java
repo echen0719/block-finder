@@ -36,8 +36,6 @@ public class BlockScanner {
         System.out.print("Started the scan!");
 
         lastPlayerCenter = client.player.blockPosition();
-        foundBlocks.put(targetBlock, java.util.Collections.synchronizedList(new java.util.ArrayList<>()));
-
         BlockPos playerCenter = client.player.blockPosition();
         int playerX = playerCenter.getX();
         int playerZ = playerCenter.getZ();
@@ -63,10 +61,14 @@ public class BlockScanner {
             }
         }
 
+        List<BlockPos> tempPositions = Collections.synchronizedList(new java.util.ArrayList<>());
+
         executor.submit(() -> {
             for (LevelChunk chunk : chunksToScan) {
-                scanInChunk(chunk, targetBlock, playerCenter, blockRadius, minY, maxY);
+                scanInChunk(chunk, targetBlock, playerCenter, blockRadius, minY, maxY, tempPositions);
             }
+
+            foundBlocks.put(targetBlock, tempPositions);
 
             int totalFound = foundBlocks.values().stream().mapToInt(List::size).sum();
             System.out.println("Completed! Found " + totalFound + " blocks.");
@@ -75,7 +77,7 @@ public class BlockScanner {
         });
     }
 
-    public static void scanInChunk(LevelChunk chunk, Block targetBlock, BlockPos playerCenter, int blockRadius, int minY, int maxY) {
+    public static void scanInChunk(LevelChunk chunk, Block targetBlock, BlockPos playerCenter, int blockRadius, int minY, int maxY, List<BlockPos> currentList) {
         int chunkMinX = chunk.getPos().getMinBlockX();
         int chunkMinZ = chunk.getPos().getMinBlockZ();
 
@@ -99,10 +101,7 @@ public class BlockScanner {
                     BlockState state = chunk.getBlockState(position);
 
                     if (state.is(targetBlock)) {
-                        List<BlockPos> list = foundBlocks.get(targetBlock);
-                        if (list != null) {
-                            list.add(position.immutable());
-                        } // world position and thread safe?
+                        currentList.add(position.immutable()); // world position and thread safe?
                     }
                 }
             }

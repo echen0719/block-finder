@@ -48,8 +48,6 @@ public class BlockFinderClient implements ClientModInitializer {
 				
 				// check to make sure coords changed before scanning
 				if (!currentPos.equals(BlockScanner.lastPlayerCenter)) {
-					BlockDrawer.clear();
-
 					// get values to scan
 					for (blockConfig config : menuScreen.getActivePool()) {
 						try {
