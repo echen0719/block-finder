@@ -7,8 +7,6 @@ import net.minecraft.resources.Identifier;
 
 import com.mojang.blaze3d.platform.InputConstants;
 
-import echen0719.blockfinder.screens.menuScreen;
-
 import java.util.List;
 import java.util.ArrayList;
 
@@ -16,9 +14,12 @@ import org.lwjgl.glfw.GLFW;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
 
+import echen0719.blockfinder.screens.HUDInfo;
+import echen0719.blockfinder.screens.menuScreen;
 import echen0719.blockfinder.screens.blockConfig;
 
 public class BlockFinderClient implements ClientModInitializer {
@@ -107,5 +108,11 @@ public class BlockFinderClient implements ClientModInitializer {
 				}
             }
 		});
+
+		showHUD();
+	}
+
+	public void showHUD() {
+		HudElementRegistry.addLast(Identifier.fromNamespaceAndPath("blockfinder", "hud_info"), HUDInfo.hudElement);
 	}
 }
