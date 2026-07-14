@@ -12,8 +12,10 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.item.ItemStack;
 
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents;
+
 import echen0719.blockfinder.client.BlockDrawer;
 import echen0719.blockfinder.client.BlockScanner;
+import echen0719.blockfinder.client.BlockFinderClient;
 import echen0719.blockfinder.utils.guiUtils;
 import echen0719.blockfinder.utils.colorUtils;
 import echen0719.blockfinder.screens.blockConfig;
@@ -37,7 +39,7 @@ public class menuScreen extends Screen {
     private static int black = 0xFF000000;
 
     // pool values
-    private static final java.util.List<blockConfig> activePool = new java.util.ArrayList<>();
+    public static final java.util.List<blockConfig> activePool = new java.util.ArrayList<>();
     private static blockConfig selectedConfig = null;
 
     public menuScreen() {
@@ -95,6 +97,7 @@ public class menuScreen extends Screen {
             }
 
             onClose();
+            BlockFinderClient.showHUD();
         });
 
         clearButton = guiUtils.createButton(this, "Clear All", this.width / 2 + 10, this.height - 40, 100, 20, button -> {
@@ -132,7 +135,7 @@ public class menuScreen extends Screen {
             int startX = 10;
             int startY = 60;
             int itemHeight = 24;
-            int rowSpacing = 28;
+            int rowHeight = 28;
             int horizontalPadding = 6;
 
             int currentX = startX;
@@ -149,7 +152,7 @@ public class menuScreen extends Screen {
 
                 if (currentX + itemWidth > maxWidth) {
                     currentX = startX;
-                    currentY += rowSpacing;
+                    currentY += rowHeight;
                 }
 
                 if (currentY + itemHeight > this.height - 40) break;
@@ -216,7 +219,7 @@ public class menuScreen extends Screen {
         int startX = 10;
         int startY = 60;
         int itemHeight = 24;
-        int rowSpacing = 28;
+        int rowHeight = 28;
         int horizontalPadding = 6;
 
         int currentX = startX;
@@ -235,7 +238,7 @@ public class menuScreen extends Screen {
 
             if (currentX + itemWidth > maxWidth) {
                 currentX = startX;
-                currentY += rowSpacing;
+                currentY += rowHeight;
             }
 
             if (currentY + itemHeight > this.height - 40) break; // prevent overflow
