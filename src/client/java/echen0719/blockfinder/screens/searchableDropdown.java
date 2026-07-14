@@ -85,6 +85,7 @@ public class searchableDropdown extends AbstractWidget {
             int startY = this.getY();
 
             searchBox = guiUtils.createInputBox(parent, startX, startY, this.getWidth(), this.getHeight(), "Enter block name...");
+            searchBox.setMaxLength(40); // if Mojang adds something Super Duper Waxed Weathered Copper Golem Statue
             searchBox.setResponder(this::changeSearchTerm);
             searchBox.setVisible(false);
         }

@@ -29,15 +29,19 @@ public class BlockScanner {
     public static boolean autoRescan = false;
     public static boolean autoRescanReady = false;
     public static BlockPos lastPlayerCenter = null;
-    public static boolean isScanning = false;
+    public static volatile boolean isScanning = false;
+
+    // concurrent map for scans
+    private static final java.util.Set<Block> activeScans = java.util.concurrent.ConcurrentHashMap.newKeySet();
 
     public static void scan(int blockRadius, Block targetBlock, int minY, int maxY) {
-        if (client.level == null || client.player == null || isScanning) {
-            System.out.print("Ended the scan!");
+        if (client.level == null || client.player == null || activeScans.contains(targetBlock)) {
+            System.out.print("Ended the scan or block has already been scanned!");
             return;
         }
 
         isScanning = true;
+        activeScans.add(targetBlock);
         System.out.print("Started the scan!");
 
         lastPlayerCenter = client.player.blockPosition();
@@ -55,7 +59,7 @@ public class BlockScanner {
 
         List<LevelChunk> chunksToScan = new ArrayList<>();
 
-        for (int x = minChunkX; x <= maxChunkX; x++) { // should improve n^3 to something
+        for (int x = minChunkX; x <= maxChunkX; x++) {
             for (int z = minChunkZ; z <= maxChunkZ; z++) {
                 if (client.level.hasChunk(x, z)) {
                     LevelChunk chunk = client.level.getChunk(x, z);
@@ -78,7 +82,10 @@ public class BlockScanner {
             int totalFound = foundBlocks.values().stream().mapToInt(List::size).sum();
             System.out.println("Completed! Found " + totalFound + " blocks.");
 
-            isScanning = false;
+            activeScans.remove(targetBlock);
+            if (activeScans.isEmpty()) {
+                isScanning = false;
+            }
         });
     }
 

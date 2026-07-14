@@ -56,13 +56,13 @@ public class menuScreen extends Screen {
         minYBox.setResponder(value -> {if (selectedConfig != null) selectedConfig.minY = value;});
         maxYBox.setResponder(value -> {if (selectedConfig != null) selectedConfig.maxY = value;});
         
-        blockDropdown = new searchableDropdown(this, 10, 30, 200, 20, "Block name");
+        blockDropdown = new searchableDropdown(this, 10, 30, 225, 20, "Block name");
 
-        autoRescanCheckbox = guiUtils.createCheckbox(this, "Auto Rescan", 250, 30, BlockScanner.autoRescan, (checkbox, selected) -> {
+        autoRescanCheckbox = guiUtils.createCheckbox(this, "Auto Rescan", this.width - 170, 30, BlockScanner.autoRescan, (checkbox, selected) -> {
             BlockScanner.autoRescan = selected;
         });
 
-        showHUDCheckbox = guiUtils.createCheckbox(this, "Show HUD", 350, 30, HUDInfo.showHUD, (checbox, selected) -> {
+        showHUDCheckbox = guiUtils.createCheckbox(this, "Show HUD", this.width - 80, 30, HUDInfo.showHUD, (checbox, selected) -> {
             HUDInfo.showHUD = selected;
         });
 
@@ -144,7 +144,7 @@ public class menuScreen extends Screen {
             int horizontalPadding = 6;
 
             int currentX = startX;
-            int currentY = startY;
+            int currentY = startY + 20;
             int maxWidth = this.width - 10;
 
             for (int i = 0; i < activePool.size(); i++) {
@@ -232,6 +232,7 @@ public class menuScreen extends Screen {
         int maxWidth = this.width - 10;
 
         context.text(this.font, Component.literal("Active Finders:"), startX, startY, white);
+        currentY += 20;
 
         for (int i = 0; i < activePool.size(); i++) {
             blockConfig config = activePool.get(i);
@@ -339,10 +340,6 @@ public class menuScreen extends Screen {
         maxYBox.setVisible(usingSubmenu);
         
         // these are hidden when submenu opens
-        if (autoRescanCheckbox != null) {
-            autoRescanCheckbox.visible = !usingSubmenu;
-        }
-
         if (submitButton != null) {
             submitButton.visible = !usingSubmenu;
         }
