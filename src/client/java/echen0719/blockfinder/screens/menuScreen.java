@@ -18,7 +18,6 @@ import echen0719.blockfinder.client.BlockScanner;
 import echen0719.blockfinder.client.BlockFinderClient;
 import echen0719.blockfinder.utils.guiUtils;
 import echen0719.blockfinder.utils.colorUtils;
-import echen0719.blockfinder.screens.blockConfig;
 
 public class menuScreen extends Screen {
     // gui componenets
@@ -29,6 +28,7 @@ public class menuScreen extends Screen {
     private Button submitButton;
     private Button clearButton;
     private Checkbox autoRescanCheckbox;
+    private Checkbox showHUDCheckbox;
 
     // colors
     private static int white = 0xFFFFFFFF;
@@ -58,8 +58,12 @@ public class menuScreen extends Screen {
         
         blockDropdown = new searchableDropdown(this, 10, 30, 200, 20, "Block name");
 
-        autoRescanCheckbox = guiUtils.createCheckbox(this, "Auto Rescan", 240, 30, BlockScanner.autoRescan, (checkbox, selected) -> {
+        autoRescanCheckbox = guiUtils.createCheckbox(this, "Auto Rescan", 250, 30, BlockScanner.autoRescan, (checkbox, selected) -> {
             BlockScanner.autoRescan = selected;
+        });
+
+        showHUDCheckbox = guiUtils.createCheckbox(this, "Show HUD", 350, 30, HUDInfo.showHUD, (checbox, selected) -> {
+            HUDInfo.showHUD = selected;
         });
 
         this.addRenderableWidget(radiusSizeBox);
@@ -68,6 +72,7 @@ public class menuScreen extends Screen {
         this.addRenderableWidget(maxYBox);
 
         this.addRenderableWidget(autoRescanCheckbox);
+        this.addRenderableWidget(showHUDCheckbox);
 
         this.addRenderableWidget(blockDropdown);
         this.addRenderableWidget(blockDropdown.getSearchBox());

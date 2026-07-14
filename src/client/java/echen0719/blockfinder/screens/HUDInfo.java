@@ -12,6 +12,9 @@ import echen0719.blockfinder.client.BlockScanner;
 import echen0719.blockfinder.screens.blockConfig;
 
 public class HUDInfo {
+    // toggle state
+    public static boolean showHUD = true;
+
     // layout constants
     private static int startX;
     private static int startY;
@@ -25,7 +28,7 @@ public class HUDInfo {
     public static HudElement hudElement = (context, counter) -> {
         Minecraft client = Minecraft.getInstance();
 
-        if (menuScreen.activePool.isEmpty()) {
+        if (!showHUD || menuScreen.activePool.isEmpty()) {
             return;
         }
 
