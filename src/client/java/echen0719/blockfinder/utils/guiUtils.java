@@ -5,6 +5,7 @@ import net.minecraft.client.gui.components.Checkbox;
 import net.minecraft.client.gui.components.Checkbox.Builder;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.network.chat.Component;
 
 public class guiUtils {
@@ -23,5 +24,47 @@ public class guiUtils {
         Builder build = Checkbox.builder(Component.literal(label), screen.getFont()).pos(x, y);
         Checkbox checkbox = build.selected(value).onValueChange(onValueChange).build();
         return checkbox;
+    }
+
+    public static class Slider extends AbstractSliderButton {
+        private String label;
+        private int maxVal;
+        private Runnable onChange;
+
+        public Slider(int x, int y, int width, int height, String label, int initialValue, int maxVal, Runnable onChange) {
+            super(x, y, width, height, Component.literal(label), (double) initialValue / maxVal);
+            this.label = label;
+            this.maxVal = maxVal;
+            this.onChange = onChange;
+            this.updateMessage();
+        }
+        
+        @Override
+        protected void updateMessage() {
+            this.setMessage(Component.literal(label));
+        }
+
+        @Override
+        protected void applyValue() {
+            if (this.onChange != null) {
+                this.onChange.run();
+            }
+        }
+
+        public int getIntValue() {
+            return (int) Math.round(value * maxVal);
+        }
+
+        public void setIntValue(int val) {
+            double newValue = (double) Math.max(0, Math.min(maxVal, val)) / maxVal;
+            if (this.value != newValue) {
+                this.value = newValue;
+                this.updateMessage();
+            }
+        }
+    }
+
+    public static Slider createSlider(int x, int y, int width, int height, String label, int initialValue, int maxVal, Runnable onChange) {
+        return new Slider(x, y, width, height, label, initialValue, maxVal, onChange);
     }
 }

@@ -1,13 +1,13 @@
 package echen0719.blockfinder.screens;
 
+import echen0719.blockfinder.utils.guiUtils;
+import echen0719.blockfinder.utils.guiUtils.Slider;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
-
-import echen0719.blockfinder.utils.guiUtils;
 
 public class colorPicker extends Screen {
     private Screen parent;
@@ -18,11 +18,23 @@ public class colorPicker extends Screen {
     private EditBox blueBox;
     private EditBox alphaBox;
 
+    private Slider redSlider;
+    private Slider greenSlider;
+    private Slider blueSlider;
+    private Slider alphaSlider;
+
     // values
     private Object[] color;
 
     // colors
     private static int white = 0xFFFFFFFF;
+
+    // layout constants
+    private int centerX;
+    private int startY;
+    private int labelX;
+    private int sliderX;
+    private int boxX;
 
     private GuiGraphicsExtractor context;
     private Minecraft client = Minecraft.getInstance();
@@ -34,10 +46,37 @@ public class colorPicker extends Screen {
     }
 
     public void createInputs() {
-        redBox = guiUtils.createInputBox(this, this.width / 2 + 15, 40, 50, 20, "0-255");
-        greenBox = guiUtils.createInputBox(this, this.width / 2 + 15, 70, 50, 20, "0-255");
-        blueBox = guiUtils.createInputBox(this, this.width / 2 + 15, 100, 50, 20, "0-255");
-        alphaBox = guiUtils.createInputBox(this, this.width / 2 + 15, 130, 50, 20, "0-1");
+        int alphaPercentage = 50; // middle down the road
+        if (color != null && color.length == 4 || color[3] != null) {
+            alphaPercentage = (int) (((Number) color[3]).floatValue() * 100);
+        }
+
+        redSlider = guiUtils.createSlider(sliderX, startY, 100, 20, "Red", (int) color[0], 255, () -> {
+            color[0] = redSlider.getIntValue();
+            redBox.setValue(String.valueOf(color[0]));
+        });
+        greenSlider = guiUtils.createSlider(sliderX, startY + 30, 100, 20, "Green", (int) color[1], 255, () -> {
+            color[1] = greenSlider.getIntValue();
+            greenBox.setValue(String.valueOf(color[1]));
+        });
+        blueSlider = guiUtils.createSlider(sliderX, startY + 60, 100, 20, "Blue", (int) color[2], 255, () -> {
+            color[2] = blueSlider.getIntValue();
+            blueBox.setValue(String.valueOf(color[2]));
+        });
+        alphaSlider = guiUtils.createSlider(sliderX, startY + 90, 100, 20, "Alpha", (int) alphaPercentage, 100, () -> {
+            color[3] = alphaSlider.getIntValue() / 100.0f;
+            alphaBox.setValue(String.valueOf(color[3]));
+        });
+
+        redBox = guiUtils.createInputBox(this, boxX, startY, 50, 20, "0-255");
+        greenBox = guiUtils.createInputBox(this, boxX, startY + 30, 50, 20, "0-255");
+        blueBox = guiUtils.createInputBox(this, boxX, startY + 60, 50, 20, "0-255");
+        alphaBox = guiUtils.createInputBox(this, boxX, startY + 90, 50, 20, "0-1");
+
+        this.addRenderableWidget(redSlider);
+        this.addRenderableWidget(greenSlider);
+        this.addRenderableWidget(blueSlider);
+        this.addRenderableWidget(alphaSlider);
 
         this.addRenderableWidget(redBox);
         this.addRenderableWidget(greenBox);
@@ -76,9 +115,15 @@ public class colorPicker extends Screen {
         super.init();
         this.clearWidgets();
 
+        centerX = this.width / 2;
+        startY = 60;
+        labelX = centerX - 140;
+        sliderX = centerX - 100;
+        boxX = centerX + 10;
+
         createInputs();
 
-        Button doneButton = guiUtils.createButton(this, "Done", this.width / 2, 160, 100, 20,
+        Button doneButton = guiUtils.createButton(this, "Done", centerX - 50, 200, 100, 20,
         button -> {
             setColor();
             Minecraft.getInstance().setScreenAndShow(parent);
@@ -90,9 +135,22 @@ public class colorPicker extends Screen {
     public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
         super.extractRenderState(context, mouseX, mouseY, delta);
 
-        context.centeredText(client.font, "Red:", this.width / 2 - 15, 40, white);
-        context.centeredText(client.font, "Green:", this.width / 2 - 15, 70, white);
-        context.centeredText(client.font, "Blue:", this.width / 2 - 15, 100, white);
-        context.centeredText(client.font, "Alpha:", this.width / 2 - 15, 130, white);
+        if (color != null && color[0] != null && color[1] != null && color[2] != null && color[3] != null) {
+            int r = ((Number) color[0]).intValue();
+            int g = ((Number) color[1]).intValue();
+            int b = ((Number) color[2]).intValue();
+            int a = (int) (((Number) color[3]).floatValue() * 255f);
+
+            int previewColor = (a << 24) | (r << 16) | (g << 8) | b; // create some integer from rgba
+
+            int previewX = centerX + 100;
+            int previewY = this.height / 2 - 45;
+            context.fill(previewX, previewY, previewX + 50, previewY + 50, previewColor);
+        }
+
+        context.centeredText(client.font, "Red:", labelX, startY, white);
+        context.centeredText(client.font, "Green:", labelX, startY + 30, white);
+        context.centeredText(client.font, "Blue:", labelX, startY + 60, white);
+        context.centeredText(client.font, "Alpha:", labelX, startY + 90, white);
     }
 }
