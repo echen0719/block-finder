@@ -31,7 +31,7 @@ public class colorPicker extends Screen {
 
     // layout constants
     private int centerX;
-    private int startY;
+    private int centerY;
     private int labelX;
     private int sliderX;
     private int boxX;
@@ -51,27 +51,27 @@ public class colorPicker extends Screen {
             alphaPercentage = (int) (((Number) color[3]).floatValue() * 100);
         }
 
-        redSlider = guiUtils.createSlider(sliderX, startY, 100, 20, "Red", (int) color[0], 255, () -> {
+        redSlider = guiUtils.createSlider(sliderX, centerY - 45, 100, 20, "Red", (int) color[0], 255, () -> {
             color[0] = redSlider.getIntValue();
             redBox.setValue(String.valueOf(color[0]));
         });
-        greenSlider = guiUtils.createSlider(sliderX, startY + 30, 100, 20, "Green", (int) color[1], 255, () -> {
+        greenSlider = guiUtils.createSlider(sliderX, centerY - 15, 100, 20, "Green", (int) color[1], 255, () -> {
             color[1] = greenSlider.getIntValue();
             greenBox.setValue(String.valueOf(color[1]));
         });
-        blueSlider = guiUtils.createSlider(sliderX, startY + 60, 100, 20, "Blue", (int) color[2], 255, () -> {
+        blueSlider = guiUtils.createSlider(sliderX, centerY + 15, 100, 20, "Blue", (int) color[2], 255, () -> {
             color[2] = blueSlider.getIntValue();
             blueBox.setValue(String.valueOf(color[2]));
         });
-        alphaSlider = guiUtils.createSlider(sliderX, startY + 90, 100, 20, "Alpha", (int) alphaPercentage, 100, () -> {
+        alphaSlider = guiUtils.createSlider(sliderX, centerY + 45, 100, 20, "Alpha", (int) alphaPercentage, 100, () -> {
             color[3] = alphaSlider.getIntValue() / 100.0f;
             alphaBox.setValue(String.valueOf(color[3]));
         });
 
-        redBox = guiUtils.createInputBox(this, boxX, startY, 50, 20, "0-255");
-        greenBox = guiUtils.createInputBox(this, boxX, startY + 30, 50, 20, "0-255");
-        blueBox = guiUtils.createInputBox(this, boxX, startY + 60, 50, 20, "0-255");
-        alphaBox = guiUtils.createInputBox(this, boxX, startY + 90, 50, 20, "0-1");
+        redBox = guiUtils.createInputBox(this, boxX, centerY - 45, 50, 20, "0-255");
+        greenBox = guiUtils.createInputBox(this, boxX, centerY - 15, 50, 20, "0-255");
+        blueBox = guiUtils.createInputBox(this, boxX, centerY + 15, 50, 20, "0-255");
+        alphaBox = guiUtils.createInputBox(this, boxX, centerY + 45, 50, 20, "0-1");
 
         this.addRenderableWidget(redSlider);
         this.addRenderableWidget(greenSlider);
@@ -116,14 +116,14 @@ public class colorPicker extends Screen {
         this.clearWidgets();
 
         centerX = this.width / 2;
-        startY = 60;
+        centerY = this.height / 2 - 30;
         labelX = centerX - 140;
         sliderX = centerX - 100;
         boxX = centerX + 10;
 
         createInputs();
 
-        Button doneButton = guiUtils.createButton(this, "Done", centerX - 50, 200, 100, 20,
+        Button doneButton = guiUtils.createButton(this, "Done", centerX - 50, centerY + 90, 100, 20,
         button -> {
             setColor();
             Minecraft.getInstance().setScreenAndShow(parent);
@@ -144,13 +144,13 @@ public class colorPicker extends Screen {
             int previewColor = (a << 24) | (r << 16) | (g << 8) | b; // create some integer from rgba
 
             int previewX = centerX + 100;
-            int previewY = this.height / 2 - 45;
+            int previewY = centerY - 25;
             context.fill(previewX, previewY, previewX + 50, previewY + 50, previewColor);
         }
 
-        context.centeredText(client.font, "Red:", labelX, startY, white);
-        context.centeredText(client.font, "Green:", labelX, startY + 30, white);
-        context.centeredText(client.font, "Blue:", labelX, startY + 60, white);
-        context.centeredText(client.font, "Alpha:", labelX, startY + 90, white);
+        context.text(client.font, "Red:", labelX, centerY - 45, white);
+        context.text(client.font, "Green:", labelX, centerY - 15, white);
+        context.text(client.font, "Blue:", labelX, centerY + 15, white);
+        context.text(client.font, "Alpha:", labelX, centerY + 45, white);
     }
 }

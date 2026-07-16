@@ -78,27 +78,75 @@ public class menuScreen extends Screen {
         this.addRenderableWidget(blockDropdown.getSearchBox());
     }
 
+    private boolean isValid(String value) {
+        if (value == null || value.trim().isEmpty()) {
+            return false;
+        }
+        try {
+            Integer.parseInt(value.trim());
+            return true;
+        }
+        catch (NumberFormatException e) {
+            return false;
+        }
+    }
+
+    private boolean generateErrorMessage() {
+        java.util.List<String> missingFields = new java.util.ArrayList<>();
+        for (blockConfig config : activePool) {
+            if (!isValid(config.radius) && !missingFields.contains("radius")) {
+                missingFields.add("radius");
+            }
+            if (!isValid(config.minY) && !missingFields.contains("minimum Y")) {
+                missingFields.add("minimum Y");
+            }
+            if (!isValid(config.maxY) && !missingFields.contains("maximum Y")) {
+                missingFields.add("maximum Y");
+            }
+        }
+
+        if (!missingFields.isEmpty()) {
+            String missingString = "";
+            if (missingFields.size() == 1) {
+                missingString = missingFields.get(0);
+            } 
+            else if (missingFields.size() == 2) {
+                missingString = missingFields.get(0) + " and " + missingFields.get(1);
+            } 
+            else {
+                missingString = missingFields.get(0) + ", " + missingFields.get(1) + ", and " + missingFields.get(2);
+            }
+
+            HUDInfo.errorMessage = "Fill in/Check the values for " + missingString + " and resubmit.";
+            
+            onClose();
+            BlockFinderClient.showHUD();
+            return true; // had error
+        }
+        return false; // No error
+    }
+
     public void createButtons() {
         submitButton = guiUtils.createButton(this, "Submit", this.width / 2 - 110, this.height - 40, 100, 20, button -> {
             if (activePool.isEmpty()) return;
 
+            if (generateErrorMessage()) {
+                return;
+            }
+
+            HUDInfo.errorMessage = null; // clear message after submit
             BlockScanner.autoRescanReady = true;
 
             for (blockConfig config : activePool) {
-                try {
-                    int radius = Integer.parseInt(config.radius.trim());
-                    int minY = Integer.parseInt(config.minY.trim());
-                    int maxY = Integer.parseInt(config.maxY.trim());
+                int radius = Integer.parseInt(config.radius.trim());
+                int minY = Integer.parseInt(config.minY.trim());
+                int maxY = Integer.parseInt(config.maxY.trim());
 
-                    if (minY <= -64 || minY > 320) minY = -64;
-                    if (maxY <= -64 || maxY > 320) maxY = 319;
+                if (minY <= -64 || minY > 320) minY = -64;
+                if (maxY <= -64 || maxY > 320) maxY = 319;
 
-                    BlockDrawer.setColor(config.color);
-                    BlockScanner.scan(radius, config.block, minY, maxY);
-                } 
-                catch (NumberFormatException e) {
-                    System.out.println("Bruh");
-                }
+                BlockDrawer.setColor(config.color);
+                BlockScanner.scan(radius, config.block, minY, maxY);
             }
 
             onClose();

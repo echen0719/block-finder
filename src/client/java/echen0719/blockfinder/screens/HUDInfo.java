@@ -4,6 +4,7 @@ import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.network.chat.FormattedText;
 
 import java.util.List;
 
@@ -15,6 +16,9 @@ public class HUDInfo {
     // toggle state
     public static boolean showHUD = true;
 
+    // error message (for if player forgets stuff)
+    public static String errorMessage = null;
+
     // layout constants
     private static int startX;
     private static int startY;
@@ -24,11 +28,27 @@ public class HUDInfo {
     private static int lightGray = 0xFF808080;
     private static int darkGray = 0xFF404040;
     private static int black = 0xFF000000;
+    private static int red = 0xFFFF5555;
 
     public static HudElement hudElement = (context, counter) -> {
         Minecraft client = Minecraft.getInstance();
 
-        if (!showHUD || menuScreen.activePool.isEmpty()) {
+        boolean hasError = errorMessage != null;
+        if (!showHUD || (menuScreen.activePool.isEmpty() && !hasError)) {
+            return;
+        }
+
+        if (hasError) { // render error message
+            int boxHeight = 50;
+            int boxWidth = 100;
+
+            startX = context.guiWidth() - boxWidth - 5;
+            startY = context.guiHeight() - boxHeight - 5;
+
+            context.fill(startX - 1, startY - 1, startX + boxWidth + 1, startY + boxHeight + 1, black);
+            context.fill(startX, startY, startX + boxWidth, startY + boxHeight, darkGray);
+            context.textWithWordWrap(client.font, FormattedText.of(errorMessage), startX + 5, startY + 5, 90, red); 
+            // really useful method btw
             return;
         }
 
