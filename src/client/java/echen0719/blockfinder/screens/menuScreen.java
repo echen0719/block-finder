@@ -1,9 +1,17 @@
 package echen0719.blockfinder.screens;
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
+import com.google.gson.JsonElement;
+
+import java.io.File;
+
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.components.Checkbox; // HOW DID I NOT KNOW THIS EXISTED?!
@@ -11,6 +19,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.item.ItemStack;
 
+import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents;
 
 import echen0719.blockfinder.client.BlockDrawer;
@@ -27,6 +36,8 @@ public class menuScreen extends Screen {
     private searchableDropdown blockDropdown;
     private Button submitButton;
     private Button clearButton;
+    private Button loadButton;
+    private Button saveButton;
     private Checkbox autoRescanCheckbox;
     private Checkbox showHUDCheckbox;
 
@@ -123,7 +134,7 @@ public class menuScreen extends Screen {
             BlockFinderClient.showHUD();
             return true; // had error
         }
-        return false; // No error
+        return false; // no error
     }
 
     public void createButtons() {
@@ -161,12 +172,46 @@ public class menuScreen extends Screen {
             BlockScanner.autoRescanReady = false;
         });
 
+        loadButton = guiUtils.createButton(this, "↑", 5, this.height - 25, 20, 20, button -> {
+            Minecraft.getInstance().setScreenAndShow(new confirmationScreen(this)); // create file
+        });
+
+        saveButton = guiUtils.createButton(this, "↓ ", 30, this.height - 25, 20, 20, button -> {
+
+        });
+
         this.addRenderableWidget(submitButton);
         this.addRenderableWidget(clearButton);
+        this.addRenderableWidget(loadButton);
+        this.addRenderableWidget(saveButton);
     }
 
     public static java.util.List<blockConfig> getActivePool() {
         return activePool;
+    }
+
+    public void saveToFile(String fileName) {
+        File gameDir = FabricLoader.getInstance().getGameDirectory();
+        File folder = new File(gameDir, "blockfinder");
+
+        File outputFile = new File(folder, fileName);
+        JsonArray jsonArray = new JsonArray();
+
+        for (blockConfig config : activePool) {
+            JsonObject configJson = new JsonObject();
+            
+            String blockID = BuiltInRegistries.BLOCK.getKey(config.block).toString();
+            configJson.addProperty("block", blockID);
+            configJson.addProperty("radius", config.radius);
+            configJson.addProperty("minY", config.minY);
+            configJson.addProperty("maxY", config.maxY);
+
+            // figure out color stuff
+
+            jsonArray.add(configJson);
+        }
+
+        // write out
     }
 
     // using previous code from serverscan

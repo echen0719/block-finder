@@ -7,12 +7,14 @@ import net.minecraft.resources.Identifier;
 
 import com.mojang.blaze3d.platform.InputConstants;
 
+import java.io.File;
 import java.util.List;
 import java.util.ArrayList;
 
 import org.lwjgl.glfw.GLFW;
 
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
@@ -32,6 +34,9 @@ public class BlockFinderClient implements ClientModInitializer {
 
 	@Override
 	public void onInitializeClient() {
+		File gameDir = FabricLoader.getInstance().getGameDirectory();
+        File folder = new File(gameDir, "blockfinder");
+
 		scanKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
 			"key.blockfinder.scan", 
 			InputConstants.Type.KEYSYM, 
