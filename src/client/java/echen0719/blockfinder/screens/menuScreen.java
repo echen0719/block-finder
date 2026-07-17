@@ -145,7 +145,6 @@ public class menuScreen extends Screen {
                 if (minY <= -64 || minY > 320) minY = -64;
                 if (maxY <= -64 || maxY > 320) maxY = 319;
 
-                BlockDrawer.setColor(config.color);
                 BlockScanner.scan(radius, config.block, minY, maxY);
             }
 

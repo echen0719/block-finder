@@ -62,7 +62,6 @@ public class BlockFinderClient implements ClientModInitializer {
 							if (minY <= -64 || minY > 320) minY = -64;
 							if (maxY <= -64 || maxY > 320) maxY = 319;
 
-							BlockDrawer.setColor(config.color);
 							BlockScanner.scan(radius, config.block, minY, maxY);
 						} 
 						catch (NumberFormatException e) {
@@ -87,8 +86,6 @@ public class BlockFinderClient implements ClientModInitializer {
 					java.util.List<BlockPos> positions = BlockScanner.foundBlocks.get(config.block);
         			if (positions == null) continue;
 
-					BlockDrawer.setColor(config.color);
-
 					List<BlockPos> visiblePositions = new ArrayList<>();
 					synchronized (positions) {
 						for (BlockPos position : positions) {
@@ -103,7 +100,7 @@ public class BlockFinderClient implements ClientModInitializer {
 					} // prevents ConcurrentModificationException
 
 					if (!visiblePositions.isEmpty()) {
-						BlockDrawer.drawOutline(context, visiblePositions);
+						BlockDrawer.drawOutline(context, visiblePositions, config.color);
 					}
 				}
             }

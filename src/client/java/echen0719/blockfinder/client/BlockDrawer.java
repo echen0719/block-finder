@@ -24,6 +24,8 @@ import com.mojang.blaze3d.systems.RenderSystem;
 import java.util.OptionalDouble;
 import java.util.Optional;
 import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
@@ -45,47 +47,37 @@ public class BlockDrawer {
         withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false)
     ).build());
 
-    private static int indexCount = 0;
-    private static GpuBuffer vertexBuffer = null;
+    // caching instead of rebuilding every update
+    private static Map<Integer, Integer> indexCountCache = new HashMap<>();
+    private static Map<Integer, GpuBuffer> vertexBufferCache = new HashMap<>();
 
     private static final RenderSystem.AutoStorageIndexBuffer indices = RenderSystem.getSequentialBuffer(PrimitiveTopology.LINES);
 
-    private static float r = 1.0f;
-    private static float g = 0f;
-    private static float b = 0f;
-    private static float a = 0.5f;
+    public static int getColor(Object[] color) {
+        int r = (Integer) color[0];
+        int g = (Integer) color[1];
+        int b = (Integer) color[2];
+        int a = (int) (((Float) color[3]) * 255);
 
-    public static void setColor(Object[] color) {
-        float newR = ((Integer) color[0]).floatValue() / 255;
-        float newG = ((Integer) color[1]).floatValue() / 255;
-        float newB = ((Integer) color[2]).floatValue() / 255;
-        float newA = (Float) color[3];
-
-        if (r == newR && g == newG && b == newB && a == newA) {
-            return; 
-        } // don't refresh drawing if color did not change
-
-        r = newR;
-        g = newG;
-        b = newB;
-        a = newA;
-
-        if (vertexBuffer != null) {
-            vertexBuffer.close();
-            vertexBuffer = null;
-        }
+        return (a << 24) | (r << 16) | (g << 8) | b;
     }
 
     public static void clear() {
-        if (vertexBuffer != null) {
-            vertexBuffer.close();
-            vertexBuffer = null;
+        for (GpuBuffer buffer : vertexBufferCache.values()) {
+            buffer.close();
         }
-        indexCount = 0;
+        vertexBufferCache.clear();
+        indexCountCache.clear();
     }
 
-    private static void initBuffer() {
-        if (vertexBuffer != null) return;
+    private static void initBuffer(Object[] color) {
+        int colorKey = getColor(color);
+        if (vertexBufferCache.containsKey(colorKey)) return; // if color is already cached
+
+        float r = ((Integer) color[0]).floatValue() / 255;
+        float g = ((Integer) color[1]).floatValue() / 255;
+        float b = ((Integer) color[2]).floatValue() / 255;
+        float a = (Float) color[3];
 
         // https://github.com/AdvancedXRay/XRay-Mod/blob/main/common/src/main/java/pro/mikey/xray/core/OutlineRender.java
         ByteBufferBuilder byteBufferBuilder = new ByteBufferBuilder(seeThroughLines.getVertexFormatBinding(0).getVertexSize() * 1024);
@@ -122,16 +114,27 @@ public class BlockDrawer {
         drawEdge(bufferBuilder, matrix, x2, y1, z2, x2, y2, z2, r, g, b, a, lineWidth); // Side-East
 
         try (MeshData meshData = bufferBuilder.buildOrThrow()) {
-            indexCount = meshData.drawState().indexCount();
-            vertexBuffer = RenderSystem.getDevice().createBuffer(() -> 
-                "blockfinder buffer", GpuBuffer.USAGE_VERTEX, meshData.vertexBuffer()
+            int indexCount = meshData.drawState().indexCount();
+            GpuBuffer vertexBuffer = RenderSystem.getDevice().createBuffer(() -> 
+                "blockfinder buffer " + colorKey, GpuBuffer.USAGE_VERTEX, meshData.vertexBuffer()
             );
+
+            vertexBufferCache.put(colorKey, vertexBuffer);
+            indexCountCache.put(colorKey, indexCount);
         }
     }
 
-    public static void drawOutline(LevelRenderContext context, List<BlockPos> positions) {
+    public static void drawOutline(LevelRenderContext context, List<BlockPos> positions, Object[] color) {
         if (client.level == null || positions == null || positions.isEmpty()) return;
-        initBuffer();
+        
+        int colorKey = getColor(color);
+
+        if (!vertexBufferCache.containsKey(colorKey)) {
+            initBuffer(color);
+        }
+
+        GpuBuffer vertexBuffer = vertexBufferCache.get(colorKey);
+        int indexCount = indexCountCache.get(colorKey);
 
         PoseStack matrices = context.poseStack(); // i assume this is close to CFrames in Roblox
         if (matrices == null) return;
