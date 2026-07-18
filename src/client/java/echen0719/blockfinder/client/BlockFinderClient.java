@@ -37,6 +37,10 @@ public class BlockFinderClient implements ClientModInitializer {
 		File gameDir = FabricLoader.getInstance().getGameDirectory();
         File folder = new File(gameDir, "blockfinder");
 
+		if (!folder.exists()) {
+        	folder.mkdirs();
+    	}
+
 		scanKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
 			"key.blockfinder.scan", 
 			InputConstants.Type.KEYSYM, 

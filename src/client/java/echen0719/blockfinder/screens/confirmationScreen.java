@@ -26,9 +26,6 @@ public class confirmationScreen extends Screen {
     private final int gray = 0xFFAAAAAA;
     private final int black = 0xFF000000;
 
-    // parameter values
-    private String message;
-
     public confirmationScreen(menuScreen parent) {
         super(Component.literal("Edit Save File"));
         this.parent = parent;
@@ -40,7 +37,7 @@ public class confirmationScreen extends Screen {
         int buttonWidth = 100;
         int totalWidth = buttonWidth * 2 + padding;
 
-        renameInputBox = guiUtils.createInputBox(this, centerX - totalWidth / 2, centerY - padding, totalWidth, widgetHeight, "Enter a new file name...");
+        renameInputBox = guiUtils.createInputBox(this, centerX - totalWidth / 2, centerY - padding, totalWidth - 40, widgetHeight, "Enter a new file name...");
         this.addRenderableWidget(renameInputBox);
 
         cancelButton = guiUtils.createButton(this, "Cancel", centerX - totalWidth / 2, centerY + padding, buttonWidth, widgetHeight, button -> {
@@ -55,12 +52,12 @@ public class confirmationScreen extends Screen {
                 return;
             }
 
-            parent.saveToFile(newFileName);
+            parent.saveToFile(newFileName + ".json");
             
             Minecraft.getInstance().setScreenAndShow(parent);
         });
         this.addRenderableWidget(confirmButton);
-    }
+    } // next thing to do is check for overwrite
 
     @Override
     public void init() {
@@ -74,6 +71,8 @@ public class confirmationScreen extends Screen {
     public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) { 
         super.extractRenderState(context, mouseX, mouseY, delta);
 
-        context.text(this.font, Component.literal(message), renameInputBox.getX(), renameInputBox.getY() - padding, white);
+        // don't know why i am completely basing off of renameInputBox but whatever
+        context.centeredText(this.font, ".json", renameInputBox.getX() + renameInputBox.getWidth() + 20, renameInputBox.getY() + 5, white);
+        context.text(this.font, "Enter a file name to save as: ", renameInputBox.getX(), renameInputBox.getY() - padding, white);
     }
 }

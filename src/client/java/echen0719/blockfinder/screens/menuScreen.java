@@ -1,9 +1,8 @@
 package echen0719.blockfinder.screens;
 
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
-import com.google.gson.JsonElement;
 
 import java.io.File;
 
@@ -173,11 +172,11 @@ public class menuScreen extends Screen {
         });
 
         loadButton = guiUtils.createButton(this, "↑", 5, this.height - 25, 20, 20, button -> {
-            Minecraft.getInstance().setScreenAndShow(new confirmationScreen(this)); // create file
+            
         });
 
-        saveButton = guiUtils.createButton(this, "↓ ", 30, this.height - 25, 20, 20, button -> {
-
+        saveButton = guiUtils.createButton(this, "↓", 30, this.height - 25, 20, 20, button -> {
+            Minecraft.getInstance().setScreenAndShow(new confirmationScreen(this)); // create file
         });
 
         this.addRenderableWidget(submitButton);
@@ -195,23 +194,33 @@ public class menuScreen extends Screen {
         File folder = new File(gameDir, "blockfinder");
 
         File outputFile = new File(folder, fileName);
-        JsonArray jsonArray = new JsonArray();
+        JsonArray outputArray = new JsonArray();
 
-        for (blockConfig config : activePool) {
-            JsonObject configJson = new JsonObject();
-            
-            String blockID = BuiltInRegistries.BLOCK.getKey(config.block).toString();
-            configJson.addProperty("block", blockID);
-            configJson.addProperty("radius", config.radius);
-            configJson.addProperty("minY", config.minY);
-            configJson.addProperty("maxY", config.maxY);
+        try {
+            for (blockConfig config : activePool) {
+                JsonObject configJson = new JsonObject();
+                
+                String blockID = BuiltInRegistries.BLOCK.getKey(config.block).toString();
+                configJson.addProperty("block", blockID);
+                configJson.addProperty("radius", config.radius);
+                configJson.addProperty("minY", config.minY);
+                configJson.addProperty("maxY", config.maxY);
 
-            // figure out color stuff
+                JsonArray colorArray = new Gson().toJsonTree(config.color).getAsJsonArray();
+                configJson.add("color", colorArray);
 
-            jsonArray.add(configJson);
+                outputArray.add(configJson);
+            }
+
+            String jsonString = new Gson().toJson(outputArray);
+
+            java.io.FileWriter writer = new java.io.FileWriter(outputFile);
+            writer.write(jsonString);
+            writer.close();
         }
-
-        // write out
+        catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     // using previous code from serverscan
