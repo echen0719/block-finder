@@ -34,6 +34,7 @@ import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents;
 import echen0719.blockfinder.client.BlockDrawer;
 import echen0719.blockfinder.client.BlockScanner;
 import echen0719.blockfinder.client.BlockFinderClient;
+import echen0719.blockfinder.screens.searchableDropdown;
 import echen0719.blockfinder.utils.guiUtils;
 import echen0719.blockfinder.utils.colorUtils;
 

@@ -11,3 +11,6 @@ pluginManagement {
 
 // Should match your modid
 rootProject.name = 'block-finder'
+
+include ('common')
+include ('fabric')
