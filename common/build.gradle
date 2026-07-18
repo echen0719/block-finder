@@ -7,6 +7,8 @@ version = project.mod_version
 group = project.maven_group
 
 repositories {
+	mavenCentral()
+	maven { url 'https://maven.fabricmc.net/' }
 }
 
 sourceSets {
@@ -15,7 +17,7 @@ sourceSets {
 			srcDirs = ['src/client/java']
 		}
 		resources {
-			srcDirs = ['src/client/resources']
+			srcDirs = ['src/client/resources', 'src/main/resources']
 		}
 	}
 }

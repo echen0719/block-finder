@@ -7,6 +7,9 @@ plugins {
     id 'net.minecraftforge.gradle' version '[7.0.17,8)'
 }
 
+version = project.mod_version
+group = project.maven_group
+
 // Mojang ships Java 25 to end users in 26.1+, so your mod should target Java 25.
 java.toolchain.languageVersion = JavaLanguageVersion.of(25)
 
@@ -19,7 +22,7 @@ minecraft {
             workingDir = layout.projectDirectory.dir('run')
 
             systemProperty 'eventbus.api.strictRuntimeChecks', 'true'
-            systemProperty 'forge.enabledGameTestNamespaces', 'examplemod'
+            systemProperty 'forge.enabledGameTestNamespaces', 'block-finder'
         }
 
         register('client')
@@ -33,25 +36,29 @@ minecraft {
         register('data') {
             workingDir = layout.projectDirectory.dir('run-data')
 
-            args '--mod', 'examplemod', '--all', '--output', layout.projectDirectory.dir('src/generated/resources'), '--existing', layout.projectDirectory.dir('src/main/resources')
+            args '--mod', 'block-finder', '--all', '--output', layout.projectDirectory.dir('src/generated/resources'), '--existing', layout.projectDirectory.dir('src/main/resources')
         }
     }
 }
 
 repositories {
-    minecraft.mavenizer(it) // In Kotlin, it = this
+    minecraft.mavenizer(it)
     maven fg.forgeMaven
     maven fg.minecraftLibsMaven
     mavenCentral()
+    maven { url 'https://maven.fabricmc.net/' }
 }
 
 dependencies {
     implementation minecraft.dependency('net.minecraftforge:forge:26.2-65.0.5')
     annotationProcessor 'net.minecraftforge:eventbus-validator:7.0.1'
+    
+    implementation project(':common')
 }
 
 tasks.withType(JavaCompile).configureEach {
     // Use the UTF-8 charset for Java compilation
     // This is done by default in Java 18+, but this ensures it no matter the Java or Gradle version
     options.encoding = 'UTF-8'
+    options.release = 25
 }
