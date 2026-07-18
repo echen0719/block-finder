@@ -73,6 +73,43 @@ public class colorPicker extends Screen {
         blueBox = guiUtils.createInputBox(this, boxX, centerY + 15, 50, 20, "0-255");
         alphaBox = guiUtils.createInputBox(this, boxX, centerY + 45, 50, 20, "0-1");
 
+        // live updates for input boxes
+        redBox.setResponder(value -> {
+            try {
+                int r = Math.max(0, Math.min(255, Integer.parseInt(value.trim())));
+                redSlider.setIntValue(r);
+                color[0] = r;
+            } 
+            catch (NumberFormatException e) {}
+        });
+
+        greenBox.setResponder(value -> {
+            try {
+                int g = Math.max(0, Math.min(255, Integer.parseInt(value.trim())));
+                greenSlider.setIntValue(g);
+                color[1] = g;
+            } 
+            catch (NumberFormatException e) {}
+        });
+
+        blueBox.setResponder(value -> {
+            try {
+                int b = Math.max(0, Math.min(255, Integer.parseInt(value.trim())));
+                blueSlider.setIntValue(b);
+                color[2] = b;
+            }
+            catch (NumberFormatException e) {}
+        });
+        alphaBox.setResponder(value -> {
+            try { 
+                float alphaVal = Float.parseFloat(value.trim());
+                int alphaPercent = Math.max(0, Math.min(100, (int)(alphaVal * 100)));
+                alphaSlider.setIntValue(alphaPercent);
+                color[3] = alphaPercent / 100.0f;
+            } 
+            catch (NumberFormatException e) {}
+        });
+
         this.addRenderableWidget(redSlider);
         this.addRenderableWidget(greenSlider);
         this.addRenderableWidget(blueSlider);
