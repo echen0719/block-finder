@@ -10,6 +10,7 @@ public class blockConfig {
     public String minY = "-64";
     public String maxY = "319";
     public Object[] color = {255, 0, 0, 0.5f};
+    public boolean drawTracer = false;
 
     public blockConfig(Block block) {
         this.block = block;

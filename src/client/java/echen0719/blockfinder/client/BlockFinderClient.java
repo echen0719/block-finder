@@ -26,6 +26,7 @@ import echen0719.blockfinder.screens.blockConfig;
 
 public class BlockFinderClient implements ClientModInitializer {
 	public static menuScreen mainScreen;
+	public static boolean hudRegistered = false;
 
 	public static KeyMapping scanKey;
 	private static final KeyMapping.Category category = KeyMapping.Category.register(
@@ -92,7 +93,7 @@ public class BlockFinderClient implements ClientModInitializer {
         		int playerChunkZ = playerPos.getZ() >> 4;
 
 				for (blockConfig config : menuScreen.getActivePool()) {
-					java.util.List<BlockPos> positions = BlockScanner.foundBlocks.get(config.block);
+					List<BlockPos> positions = BlockScanner.foundBlocks.get(config.block);
         			if (positions == null) continue;
 
 					List<BlockPos> visiblePositions = new ArrayList<>();
@@ -110,6 +111,10 @@ public class BlockFinderClient implements ClientModInitializer {
 
 					if (!visiblePositions.isEmpty()) {
 						BlockDrawer.drawOutline(context, visiblePositions, config.color);
+
+						if (config.drawTracer) {
+							BlockDrawer.drawTracerLines(context, visiblePositions, config.color);
+						}
 					}
 				}
             }
@@ -117,6 +122,9 @@ public class BlockFinderClient implements ClientModInitializer {
 	}
 
 	public static void showHUD() {
-		HudElementRegistry.addLast(Identifier.fromNamespaceAndPath("blockfinder", "hud_info"), HUDInfo.hudElement);
+		if (!hudRegistered) {
+			HudElementRegistry.addLast(Identifier.fromNamespaceAndPath("blockfinder", "hud_info"), HUDInfo.hudElement);
+			hudRegistered = true;
+    	}
 	}
 }

@@ -88,8 +88,8 @@ public class BlockScanner {
 
             foundBlocks.put(targetBlock, tempPositions);
 
-            int totalFound = foundBlocks.values().stream().mapToInt(List::size).sum();
-            System.out.println("Completed! Found " + totalFound + " blocks.");
+            String blockName = targetBlock.getName().getString();
+            System.out.println("Completed! Found " + tempPositions.size() + " " + blockName + " blocks.");
 
             activeScans.remove(targetBlock);
             if (activeScans.isEmpty()) {
@@ -128,7 +128,8 @@ public class BlockScanner {
             }
         }
 
-        System.out.println("Done for " + chunk.getPos().x() + ", " + chunk.getPos().z() + "!");
+        // too many prints
+        // System.out.println("Done for " + chunk.getPos().x() + ", " + chunk.getPos().z() + "!");
     }
 
     public static void remove(Block block) {

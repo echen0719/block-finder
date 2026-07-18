@@ -8,6 +8,8 @@ import com.google.gson.JsonElement;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.util.List;
+import java.util.ArrayList;
 
 import org.lwjgl.PointerBuffer;
 import org.lwjgl.system.MemoryStack;
@@ -47,6 +49,7 @@ public class menuScreen extends Screen {
     private Button saveButton;
     private Checkbox autoRescanCheckbox;
     private Checkbox showHUDCheckbox;
+    private Checkbox drawLinesCheckbox;
 
     // colors
     private static int white = 0xFFFFFFFF;
@@ -84,10 +87,18 @@ public class menuScreen extends Screen {
             HUDInfo.showHUD = selected;
         });
 
+        drawLinesCheckbox = guiUtils.createCheckbox(this, "Draw Lines to Block", this.width / 2 - 60, 160, selectedConfig != null && selectedConfig.drawTracer, (checkbox, selected) -> {
+            if (selectedConfig != null) {
+                selectedConfig.drawTracer = selected;
+            }
+        });
+
         this.addRenderableWidget(radiusSizeBox);
 
         this.addRenderableWidget(minYBox);
         this.addRenderableWidget(maxYBox);
+
+        this.addRenderableWidget(drawLinesCheckbox);
 
         this.addRenderableWidget(autoRescanCheckbox);
         this.addRenderableWidget(showHUDCheckbox);
@@ -110,7 +121,7 @@ public class menuScreen extends Screen {
     }
 
     private boolean generateErrorMessage() {
-        java.util.List<String> missingFields = new java.util.ArrayList<>();
+        List<String> missingFields = new ArrayList<>();
         for (blockConfig config : activePool) {
             if (!isValid(config.radius) && !missingFields.contains("radius")) {
                 missingFields.add("radius");
@@ -234,7 +245,7 @@ public class menuScreen extends Screen {
         this.addRenderableWidget(saveButton);
     }
 
-    public static java.util.List<blockConfig> getActivePool() {
+    public static List<blockConfig> getActivePool() {
         return activePool;
     }
 
@@ -379,11 +390,20 @@ public class menuScreen extends Screen {
 
                     if (selectedConfig == config) {
                         selectedConfig = null;
-                    } else {
+                    } 
+                    else {
                         selectedConfig = config;
                         radiusSizeBox.setValue(config.radius);
                         minYBox.setValue(config.minY);
                         maxYBox.setValue(config.maxY);
+
+                        this.removeWidget(drawLinesCheckbox);
+                        drawLinesCheckbox = guiUtils.createCheckbox(this, "Draw Lines to Block", this.width / 2 - 60, 160, selectedConfig.drawTracer, (checkbox, selected) -> {
+                            if (selectedConfig != null) {
+                                selectedConfig.drawTracer = selected;
+                            }
+                        });
+                        this.addRenderableWidget(drawLinesCheckbox);
                     }
                     return true;
                 }
@@ -483,6 +503,9 @@ public class menuScreen extends Screen {
             context.centeredText(this.font, Component.literal("Editing: " + selectedConfig.block.getName().getString()), this.width / 2, 210, 0xFFFFFF55);
             context.centeredText(this.font, Component.literal("Radius:"), this.width / 2 - 60, 110, white);
             context.centeredText(this.font, Component.literal("Min Y  /  Max Y:"), this.width / 2 + 65, 110, white);
+
+            drawLinesCheckbox.setX(this.width / 2 - 60);
+            drawLinesCheckbox.setY(160);
         }
     }
 
@@ -498,6 +521,14 @@ public class menuScreen extends Screen {
             radiusSizeBox.setValue(selectedConfig.radius);
             minYBox.setValue(selectedConfig.minY);
             maxYBox.setValue(selectedConfig.maxY);
+
+            this.removeWidget(drawLinesCheckbox);
+            drawLinesCheckbox = guiUtils.createCheckbox(this, "Draw Lines to Block", this.width / 2 - 60, 160, selectedConfig.drawTracer, (checkbox, selected) -> {
+                if (selectedConfig != null) {
+                    selectedConfig.drawTracer = selected;
+                }
+            });
+            this.addRenderableWidget(drawLinesCheckbox);
         }
 
         ScreenMouseEvents.afterMouseScroll(this).register((ScreenMouseEvents.AfterMouseScroll) this::onMouseScroll);
@@ -525,13 +556,15 @@ public class menuScreen extends Screen {
 
         if (usingSubmenu) {
             renderSubmenuBackground(context);
-
-            radiusSizeBox.extractRenderState(context, mouseX, mouseY, delta);
         }
 
         radiusSizeBox.setVisible(usingSubmenu); // seen in submenu
         minYBox.setVisible(usingSubmenu);
         maxYBox.setVisible(usingSubmenu);
+        
+        if (drawLinesCheckbox != null) {
+            drawLinesCheckbox.visible = usingSubmenu;
+        }
         
         // these are hidden when submenu opens
         if (submitButton != null) {
@@ -548,6 +581,7 @@ public class menuScreen extends Screen {
         }
 
         blockDropdown.handleMouseDrag(mouseY);
+
         super.extractRenderState(context, mouseX, mouseY, delta);
     }
 }

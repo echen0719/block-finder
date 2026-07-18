@@ -51,6 +51,9 @@ public class BlockDrawer {
     private static Map<Integer, Integer> indexCountCache = new HashMap<>();
     private static Map<Integer, GpuBuffer> vertexBufferCache = new HashMap<>();
 
+    private static Map<Integer, Integer> tracerIndexCountCache = new HashMap<>();
+    private static Map<Integer, GpuBuffer> tracerVertexBufferCache = new HashMap<>();
+
     private static final RenderSystem.AutoStorageIndexBuffer indices = RenderSystem.getSequentialBuffer(PrimitiveTopology.LINES);
 
     public static int getColor(Object[] color) {
@@ -68,6 +71,12 @@ public class BlockDrawer {
         }
         vertexBufferCache.clear();
         indexCountCache.clear();
+
+        for (GpuBuffer buffer : tracerVertexBufferCache.values()) {
+            buffer.close();
+        }
+        tracerVertexBufferCache.clear();
+        tracerIndexCountCache.clear();
     }
 
     private static void initBuffer(Object[] color) {
@@ -116,11 +125,27 @@ public class BlockDrawer {
         try (MeshData meshData = bufferBuilder.buildOrThrow()) {
             int indexCount = meshData.drawState().indexCount();
             GpuBuffer vertexBuffer = RenderSystem.getDevice().createBuffer(() -> 
-                "blockfinder buffer " + colorKey, GpuBuffer.USAGE_VERTEX, meshData.vertexBuffer()
+                "blockfinder_buffer " + colorKey, GpuBuffer.USAGE_VERTEX, meshData.vertexBuffer()
             );
 
             vertexBufferCache.put(colorKey, vertexBuffer);
             indexCountCache.put(colorKey, indexCount);
+        }
+
+        ByteBufferBuilder tracerByteBufferBuilder = new ByteBufferBuilder(seeThroughLines.getVertexFormatBinding(0).getVertexSize() * 1024);
+        BufferBuilder tracerBufferBuilder = new BufferBuilder(tracerByteBufferBuilder, seeThroughLines.getPrimitiveTopology(), seeThroughLines.getVertexFormatBinding(0));
+        
+        Matrix4f tracerMatrix = new Matrix4f();
+        drawEdge(tracerBufferBuilder, tracerMatrix, 0, 0, 0, 1, 1, 1, r, g, b, a, lineWidth);
+
+        try (MeshData tracerMeshData = tracerBufferBuilder.buildOrThrow()) {
+            int tracerIndexCount = tracerMeshData.drawState().indexCount();
+            GpuBuffer tracerVertexBuffer = RenderSystem.getDevice().createBuffer(() -> 
+                "blockfinder_tracer_buffer " + colorKey, GpuBuffer.USAGE_VERTEX, tracerMeshData.vertexBuffer()
+            );
+
+            tracerVertexBufferCache.put(colorKey, tracerVertexBuffer);
+            tracerIndexCountCache.put(colorKey, tracerIndexCount);
         }
     }
 
@@ -175,6 +200,63 @@ public class BlockDrawer {
 
                 renderPass.setUniform("DynamicTransforms", gpubufferslice[0]);
                 renderPass.drawIndexed(indexCount, 1, 0, 0, 0);
+            }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void drawTracerLines(LevelRenderContext context, List<BlockPos> positions, Object[] color) {
+        if (client.level == null || positions == null || positions.isEmpty()) return;
+        
+        int colorKey = getColor(color);
+        
+        if (!tracerVertexBufferCache.containsKey(colorKey)) {
+            initBuffer(color);
+        }
+
+        GpuBuffer tracerVertexBuffer = tracerVertexBufferCache.get(colorKey);
+        int tracerIndexCount = tracerIndexCountCache.get(colorKey);
+        
+        PoseStack matrices = context.poseStack();
+        if (matrices == null) return;
+
+        Vec3 cameraPosition = client.gameRenderer.mainCamera().position();
+        Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
+
+        var colorTextureView = client.gameRenderer.mainRenderTarget().getColorTextureView();
+        var depthTextureView = client.gameRenderer.mainRenderTarget().getDepthTextureView();
+        
+        try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> 
+        "blockfinder_outline", colorTextureView, Optional.empty(), depthTextureView, OptionalDouble.empty())) { 
+            RenderSystem.bindDefaultUniforms(renderPass);
+            
+            renderPass.setVertexBuffer(0, tracerVertexBuffer.slice());
+            renderPass.setIndexBuffer(indices.getBuffer(tracerIndexCount), indices.type());
+            renderPass.setPipeline(seeThroughLines);
+            
+            for (BlockPos position : positions) {
+                float dx = (float)(position.getX() + 0.5 - cameraPosition.x);
+                float dy = (float)(position.getY() + 0.5 - cameraPosition.y);
+                float dz = (float)(position.getZ() + 0.5 - cameraPosition.z);
+
+                modelViewStack.pushMatrix();
+                modelViewStack.scale(dx, dy, dz); // create unit line and stretch it to camera
+
+                Matrix4f matrix = new Matrix4f(modelViewStack); // don't know what this does
+                modelViewStack.popMatrix();
+                
+                GpuBufferSlice[] gpubufferslice = RenderSystem.getDynamicUniforms().writeTransforms(
+                    new DynamicUniforms.Transform(
+                        matrix,
+                        new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), 
+                        new Vector3f(), 
+                        new Matrix4f()
+                    )
+                );
+                renderPass.setUniform("DynamicTransforms", gpubufferslice[0]);
+                renderPass.drawIndexed(tracerIndexCount, 1, 0, 0, 0);
             }
         }
         catch (Exception e) {
