@@ -3,8 +3,15 @@ package echen0719.blockfinder.screens;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonElement;
 
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+
+import org.lwjgl.PointerBuffer;
+import org.lwjgl.system.MemoryStack;
+import org.lwjgl.util.tinyfd.TinyFileDialogs;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -17,6 +24,7 @@ import net.minecraft.client.gui.components.Checkbox; // HOW DID I NOT KNOW THIS 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.resources.Identifier;
 
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents;
@@ -172,11 +180,52 @@ public class menuScreen extends Screen {
         });
 
         loadButton = guiUtils.createButton(this, "↑", 5, this.height - 25, 20, 20, button -> {
-            
+            try (MemoryStack stack = MemoryStack.stackPush()) {
+                PointerBuffer filters = stack.mallocPointer(1);
+                filters.put(stack.UTF8("*.json"));
+                filters.flip();
+                
+                File gameDir = FabricLoader.getInstance().getGameDirectory();
+                File folder = new File(gameDir, "blockfinder");
+                if (!folder.exists()) {
+                    folder.mkdirs(); // Ensure the directory exists before opening the dialog
+                }
+                
+                String selectedPath = TinyFileDialogs.tinyfd_openFileDialog(
+                    "Load Config", folder.getAbsolutePath() + File.separator,
+                    filters, "JSON Files", false
+                ); // only one select at a time
+                
+                if (selectedPath != null) {
+                    loadFromFile(selectedPath);
+                }
+            } 
+            catch (Exception e) {
+                e.printStackTrace();
+            }
         });
 
         saveButton = guiUtils.createButton(this, "↓", 30, this.height - 25, 20, 20, button -> {
-            Minecraft.getInstance().setScreenAndShow(new confirmationScreen(this)); // create file
+            try (MemoryStack stack = MemoryStack.stackPush()) {
+                PointerBuffer filters = stack.mallocPointer(1);
+                filters.put(stack.UTF8("*.json"));
+                filters.flip();
+                
+                File gameDir = FabricLoader.getInstance().getGameDirectory();
+                File folder = new File(gameDir, "blockfinder");
+
+                String selectedPath = TinyFileDialogs.tinyfd_saveFileDialog(
+                    "Save Config", folder.getAbsolutePath() + File.separator, // open in dir instead of outside
+                    filters, "JSON Files"
+                );
+
+                if (selectedPath != null) {
+                    saveToFile(selectedPath);
+                }
+            }
+            catch (Exception e) {
+                e.printStackTrace();
+            }
         });
 
         this.addRenderableWidget(submitButton);
@@ -189,15 +238,58 @@ public class menuScreen extends Screen {
         return activePool;
     }
 
-    public void saveToFile(String fileName) {
-        File gameDir = FabricLoader.getInstance().getGameDirectory();
-        File folder = new File(gameDir, "blockfinder");
+    // more checks here since people could have manually written them
+    public void loadFromFile(String filePath) {
+        File inputFile = new File(filePath);
+        if (!inputFile.exists()) return;
+        
+        try (FileReader reader = new FileReader(inputFile)) {
+            JsonArray inputArray = new Gson().fromJson(reader, JsonArray.class);
+            if (inputArray == null) return;
 
-        File outputFile = new File(folder, fileName);
+            for (int i = 0; i < inputArray.size(); i++) {
+                JsonElement element = inputArray.get(i);
+                if (!element.isJsonObject()) continue;
+            
+                JsonObject configJson = element.getAsJsonObject();
+
+                if (!configJson.has("block")) continue;
+                String blockID = configJson.get("block").getAsString();
+                Block block = BuiltInRegistries.BLOCK.getValue(Identifier.parse(blockID));
+                blockConfig config = new blockConfig(block);
+
+                // using conditional to save some lines
+                config.radius = configJson.has("radius") ? configJson.get("radius").getAsString() : "";
+                config.minY = configJson.has("minY") ? configJson.get("minY").getAsString() : "";
+                config.maxY = configJson.has("maxY") ? configJson.get("maxY").getAsString() : "";
+                
+                if (configJson.has("color")) {
+                    JsonArray colorJson = configJson.getAsJsonArray("color");
+
+                    config.color = new Object[]{
+                        colorJson.get(0).getAsInt(),
+                        colorJson.get(1).getAsInt(),
+                        colorJson.get(2).getAsInt(),
+                        colorJson.get(3).getAsFloat()
+                    };
+                }
+
+                activePool.add(config);
+            }
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void saveToFile(String filePath) {
+        File outputFile = new File(filePath);
+    
         JsonArray outputArray = new JsonArray();
-
         try {
             for (blockConfig config : activePool) {
+                if (config == null || config.block == null) continue; // safety
+
                 JsonObject configJson = new JsonObject();
                 
                 String blockID = BuiltInRegistries.BLOCK.getKey(config.block).toString();
@@ -214,9 +306,10 @@ public class menuScreen extends Screen {
 
             String jsonString = new Gson().toJson(outputArray);
 
-            java.io.FileWriter writer = new java.io.FileWriter(outputFile);
-            writer.write(jsonString);
-            writer.close();
+            try (FileWriter writer = new FileWriter(outputFile)) {
+                writer.write(jsonString);
+                writer.close();
+            }
         }
         catch (Exception e) {
             e.printStackTrace();
