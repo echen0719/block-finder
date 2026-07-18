@@ -4,6 +4,7 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
+import net.minecraft.world.level.block.Block;
 
 import com.mojang.blaze3d.platform.InputConstants;
 
@@ -15,6 +16,7 @@ import org.lwjgl.glfw.GLFW;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
@@ -82,6 +84,16 @@ public class BlockFinderClient implements ClientModInitializer {
 			} // don't know if this will lag yet
 		});
 
+		// remove block from positions if it is broken
+		PlayerBlockBreakEvents.AFTER.register((world, player, pos, state, blockEntity) -> {
+			Block brokenBlock = state.getBlock();
+			List<BlockPos> positions = BlockScanner.foundBlocks.get(brokenBlock);
+			
+			if (positions != null) {
+				positions.remove(pos);
+			}
+		});
+
 		LevelRenderEvents.END_MAIN.register(context -> { // runs every frame
 			Minecraft client = Minecraft.getInstance();
 
@@ -113,7 +125,8 @@ public class BlockFinderClient implements ClientModInitializer {
 						BlockDrawer.drawOutline(context, visiblePositions, config.color);
 
 						if (config.drawTracer) {
-							BlockDrawer.drawTracerLines(context, visiblePositions, config.color);
+							// BlockDrawer.drawTracerLines(context, visiblePositions, config.color);
+							// until I implement this...
 						}
 					}
 				}
