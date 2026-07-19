@@ -74,10 +74,6 @@ public class BlockFinderClient {
 	public void clientTick(ClientTickEvent.Post event) { // runs every tick or 20x/s
 		Minecraft client = Minecraft.getInstance();
 
-		if (!client.hasSingleplayerServer()) {
-				return;
-			} // prevent multiplayer access by restricting to singleplayer
-
 		while (scanKey.consumeClick()) {
 			mainScreen = new menuScreen();
 			client.setScreenAndShow(mainScreen);

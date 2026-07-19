@@ -53,10 +53,6 @@ public class BlockFinderClient implements ClientModInitializer {
 
 		// runs every tick or 20x/s
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
-			if (!client.hasSingleplayerServer()) {
-				return;
-			} // prevent multiplayer access by restricting to singleplayer
-
 			while (scanKey.consumeClick()) {
 				mainScreen = new menuScreen();
 				client.setScreenAndShow(mainScreen);
