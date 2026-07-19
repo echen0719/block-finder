@@ -3,12 +3,15 @@ package echen0719.blockfinder.client;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.level.block.Block;
 
 import com.mojang.blaze3d.platform.InputConstants;
 
 import java.io.File;
+import java.net.URI;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -20,6 +23,7 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.client.event.ClientPlayerNetworkEvent;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent; // HUD
@@ -35,6 +39,7 @@ import echen0719.blockfinder.screens.blockConfig;
 @Mod(BlockFinderClient.MOD_ID)
 public class BlockFinderClient {
 	public static final String MOD_ID = "block_finder";
+	public static boolean disabled = false;
 
 	public static menuScreen mainScreen;
 	public static boolean hudRegistered = false;
@@ -71,12 +76,38 @@ public class BlockFinderClient {
 	}
 
 	@SubscribeEvent
-	public void clientTick(ClientTickEvent.Post event) { // runs every tick or 20x/s
+	public void onPlayerLogin(ClientPlayerNetworkEvent.LoggingIn event) {
 		Minecraft client = Minecraft.getInstance();
 
-		if (!client.hasSingleplayerServer()) {
-				return;
-			} // prevent multiplayer access by restricting to singleplayer
+		disabled = !client.hasSingleplayerServer(); // Singleplayer
+		if (client.hasSingleplayerServer()) {
+        	return;
+    	}
+
+		// so ugly but whatever
+		if (client.player != null) {
+			client.player.sendSystemMessage(Component.literal("Block Finder (No Cheats) is disabled on multiplayer servers. \n"));
+			client.player.sendSystemMessage(Component.literal("Cheats: \n").append(Component.literal("https://www.curseforge.com/minecraft/mc-mods/block-locator/files/all").
+				withStyle(style -> 
+					style.withColor(net.minecraft.ChatFormatting.BLUE).
+					withUnderlined(true).
+					withClickEvent(new ClickEvent.OpenUrl(URI.create("https://www.curseforge.com/minecraft/mc-mods/block-locator/files/all"))
+				))
+			));
+			client.player.sendSystemMessage(Component.literal("No Cheats: \n").append(Component.literal("https://www.modrinth.com/mod/block-finder/versions").
+				withStyle(style -> 
+					style.withColor(net.minecraft.ChatFormatting.BLUE).
+					withUnderlined(true).
+					withClickEvent(new ClickEvent.OpenUrl(URI.create("https://modrinth.com/mod/block-finder/versions"))
+				))
+			));
+		}
+	}
+
+	@SubscribeEvent
+	public void clientTick(ClientTickEvent.Post event) { // runs every tick or 20x/s
+		Minecraft client = Minecraft.getInstance();
+		if (disabled) return;
 
 		while (scanKey.consumeClick()) {
 			mainScreen = new menuScreen();
