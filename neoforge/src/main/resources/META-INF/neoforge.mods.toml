@@ -3,7 +3,7 @@
 # References: https://github.com/MinecraftForge/MDKExamples
 
 modLoader="javafml"
-loaderVersion="[65,)"
+loaderVersion="[11,)"
 license="CC BY-NC-SA 4.0"
 issueTrackerURL="https://github.com/echen0719/block-finder/issues" #optional
 #clientSideOnly=true #optional, default=false
@@ -22,15 +22,15 @@ authors="echen0719" #optional
 description="Find blocks in a singleplayer or multiplayer world"
 
 [[dependencies.block_finder]] #recommended
-    modId="forge"
+    modId="neoforge"
     mandatory=true
-    versionRange="[65,)"
+    versionRange="[26,)"
     ordering="NONE"
     side="BOTH"
 
 [[dependencies.block_finder]] #recommended
     modId="minecraft"
     mandatory=true
-    versionRange="[26.2,26.3,)"
+    versionRange="[26.2,)"
     ordering="NONE"
     side="BOTH"

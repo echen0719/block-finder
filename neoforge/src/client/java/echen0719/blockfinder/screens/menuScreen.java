@@ -28,8 +28,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.resources.Identifier;
 
-import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents;
+import net.neoforged.fml.loading.FMLPaths;
+import net.neoforged.neoforge.client.event.ScreenEvent;
 
 import echen0719.blockfinder.client.BlockDrawer;
 import echen0719.blockfinder.client.BlockScanner;
@@ -197,7 +197,7 @@ public class menuScreen extends Screen {
                 filters.put(stack.UTF8("*.json"));
                 filters.flip();
                 
-                File gameDir = FabricLoader.getInstance().getGameDirectory();
+                File gameDir = FMLPaths.GAMEDIR.get().toAbsolutePath().toFile();
                 File folder = new File(gameDir, "blockfinder");
                 if (!folder.exists()) {
                     folder.mkdirs(); // Ensure the directory exists before opening the dialog
@@ -223,7 +223,7 @@ public class menuScreen extends Screen {
                 filters.put(stack.UTF8("*.json"));
                 filters.flip();
                 
-                File gameDir = FabricLoader.getInstance().getGameDirectory();
+                File gameDir = FMLPaths.GAMEDIR.get().toAbsolutePath().toFile();
                 File folder = new File(gameDir, "blockfinder");
 
                 String selectedPath = TinyFileDialogs.tinyfd_saveFileDialog(
@@ -328,13 +328,14 @@ public class menuScreen extends Screen {
         }
     }
 
-    // using previous code from serverscan
-    private boolean onMouseScroll(Screen screen, double mouseX, double mouseY, double deltaX, double deltaY, boolean consumed) {
-        blockDropdown.handleScroll(mouseX, mouseY, deltaY);
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        blockDropdown.handleScroll(mouseX, mouseY, scrollY);
         return true;
     }
 
-    private boolean onMouseClick(Screen screen, MouseButtonEvent event, boolean consumed) {
+    @Override
+    public boolean mouseClicked(MouseButtonEvent event, boolean isDoubleClick) {
         if (event.button() == 0) {
             double x = event.x();
             double y = event.y();
@@ -426,14 +427,15 @@ public class menuScreen extends Screen {
                 currentX += itemWidth + horizontalPadding;
             }
         }
-        return consumed;
+        return super.mouseClicked(event, isDoubleClick);
     }
-
-    private boolean onMouseRelease(Screen screen, MouseButtonEvent event, boolean consumed) {
+    
+    @Override
+    public boolean mouseReleased(MouseButtonEvent event) {
         if (event.button() == 0) {
             blockDropdown.handleMouseRelease();
         }
-        return consumed;
+        return super.mouseReleased(event);
     }
 
     private void renderActivePool(GuiGraphicsExtractor context, int mouseX, int mouseY) {
@@ -532,10 +534,6 @@ public class menuScreen extends Screen {
             });
             // this.addRenderableWidget(drawLinesCheckbox);
         }
-
-        ScreenMouseEvents.afterMouseScroll(this).register((ScreenMouseEvents.AfterMouseScroll) this::onMouseScroll);
-        ScreenMouseEvents.afterMouseClick(this).register((ScreenMouseEvents.AfterMouseClick) this::onMouseClick);
-        ScreenMouseEvents.afterMouseRelease(this).register((ScreenMouseEvents.AfterMouseRelease) this::onMouseRelease);
     }
 
     @Override

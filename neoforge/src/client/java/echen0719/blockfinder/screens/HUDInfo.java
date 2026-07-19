@@ -1,8 +1,8 @@
 package echen0719.blockfinder.screens;
 
-import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElement;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.network.chat.FormattedText;
 
@@ -30,7 +30,7 @@ public class HUDInfo {
     private static int black = 0xFF000000;
     private static int red = 0xFFFF5555;
 
-    public static HudElement hudElement = (context, counter) -> {
+    public static void render(GuiGraphicsExtractor context) {
         Minecraft client = Minecraft.getInstance();
 
         boolean hasError = errorMessage != null;
@@ -100,5 +100,5 @@ public class HUDInfo {
 
             currentY += itemHeight;
         }
-    };
+    }
 }

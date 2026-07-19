@@ -4,6 +4,10 @@ pluginManagement {
 			name = 'Fabric'
 			url = 'https://maven.fabricmc.net/'
 		}
+		maven {
+			name = "NeoForge"
+			url = 'https://maven.neoforged.net/releases' 
+		}
 		mavenCentral()
 		gradlePluginPortal()
 	}
@@ -14,4 +18,4 @@ rootProject.name = 'block_finder'
 
 include ('common')
 include ('fabric')
-include ('forge')
+include ('neoforge')
