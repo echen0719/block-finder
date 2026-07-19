@@ -3,7 +3,7 @@
 	"id": "block_finder",
 	"version": "${version}",
 	"name": "Block Finder",
-	"description": "Find blocks in a singleplayer or multiplayer world",
+	"description": "Find blocks in a singleplayer world",
 	"authors": [
 		"echen0719"
 	],
