@@ -19,7 +19,7 @@ logoFile="assets/block_finder/icon.png"
 authors="echen0719" #optional
 #displayTest="MATCH_VERSION" #optional, default=MATCH_VERSION when not clientSideOnly, else IGNORE_ALL_VERSION
 
-description="Find blocks in a singleplayer or multiplayer world"
+description="Find blocks in a singleplayer world"
 
 [[dependencies.block_finder]] #recommended
     modId="neoforge"
