@@ -328,13 +328,14 @@ public class menuScreen extends Screen {
         }
     }
 
-    // using previous code from serverscan
-    private boolean onMouseScroll(Screen screen, double mouseX, double mouseY, double deltaX, double deltaY, boolean consumed) {
-        blockDropdown.handleScroll(mouseX, mouseY, deltaY);
+    @Override
+    public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
+        blockDropdown.handleScroll(mouseX, mouseY, scrollY);
         return true;
     }
 
-    private boolean onMouseClick(Screen screen, MouseButtonEvent event, boolean consumed) {
+    @Override
+    public boolean mouseClicked(MouseButtonEvent event, boolean isDoubleClick) {
         if (event.button() == 0) {
             double x = event.x();
             double y = event.y();
@@ -350,7 +351,7 @@ public class menuScreen extends Screen {
                     selectedConfig = null;
                     return true;
                 }
-                return false;
+                super.mouseClicked(event, isDoubleClick);
             }
 
             if (blockDropdown.onItemClick(x, y)) {
@@ -426,14 +427,15 @@ public class menuScreen extends Screen {
                 currentX += itemWidth + horizontalPadding;
             }
         }
-        return consumed;
+        return super.mouseClicked(event, isDoubleClick);
     }
-
-    private boolean onMouseRelease(Screen screen, MouseButtonEvent event, boolean consumed) {
+    
+    @Override
+    public boolean mouseReleased(MouseButtonEvent event) {
         if (event.button() == 0) {
             blockDropdown.handleMouseRelease();
         }
-        return consumed;
+        return super.mouseReleased(event);
     }
 
     private void renderActivePool(GuiGraphicsExtractor context, int mouseX, int mouseY) {
@@ -532,10 +534,6 @@ public class menuScreen extends Screen {
             });
             // this.addRenderableWidget(drawLinesCheckbox);
         }
-
-        ScreenMouseEvents.afterMouseScroll(this).register((ScreenMouseEvents.AfterMouseScroll) this::onMouseScroll);
-        ScreenMouseEvents.afterMouseClick(this).register((ScreenMouseEvents.AfterMouseClick) this::onMouseClick);
-        ScreenMouseEvents.afterMouseRelease(this).register((ScreenMouseEvents.AfterMouseRelease) this::onMouseRelease);
     }
 
     @Override

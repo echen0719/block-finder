@@ -351,7 +351,7 @@ public class menuScreen extends Screen {
                     selectedConfig = null;
                     return true;
                 }
-                return false;
+                super.mouseClicked(event, isDoubleClick);
             }
 
             if (blockDropdown.onItemClick(x, y)) {
