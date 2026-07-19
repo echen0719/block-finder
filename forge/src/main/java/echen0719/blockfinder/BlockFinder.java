@@ -12,7 +12,7 @@ import com.mojang.logging.LogUtils;
 
 @Mod(BlockFinder.MOD_ID)
 public class BlockFinder {
-	public static final String MOD_ID = "block-finder";
+	public static final String MOD_ID = "block_finder";
 
 	// This logger is used to write text to the console and the log file.
 	// It is considered best practice to use your mod id as the logger's name.

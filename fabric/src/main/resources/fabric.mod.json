@@ -1,6 +1,6 @@
 {
 	"schemaVersion": 1,
-	"id": "block-finder",
+	"id": "block_finder",
 	"version": "${version}",
 	"name": "Block Finder",
 	"description": "Find blocks in a singleplayer or multiplayer world",
@@ -12,7 +12,7 @@
 		"sources": "https://github.com/echen0719/block-finder"
 	},
 	"license": "CC BY-NC-SA 4.0",
-	"icon": "assets/block-finder/icon.png",
+	"icon": "assets/block_finder/icon.png",
 	"environment": "*",
 	"entrypoints": {
 		"main": [
@@ -23,9 +23,9 @@
 		]
 	},
 	"mixins": [
-		"block-finder.mixins.json",
+		"block_finder.mixins.json",
 		{
-			"config": "block-finder.client.mixins.json",
+			"config": "block_finder.client.mixins.json",
 			"environment": "client"
 		}
 	],

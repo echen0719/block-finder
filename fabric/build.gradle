@@ -18,7 +18,7 @@ loom {
 	splitEnvironmentSourceSets()
 
 	mods {
-		"block-finder" {
+		"block_finder" {
 			sourceSet sourceSets.main
 			sourceSet sourceSets.client
 		}

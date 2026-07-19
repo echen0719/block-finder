@@ -11,10 +11,33 @@ version = project.mod_version
 group = project.maven_group
 
 // Mojang ships Java 25 to end users in 26.1+, so your mod should target Java 25.
-java.toolchain.languageVersion = JavaLanguageVersion.of(25)
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
+
+    withSourcesJar()
+}
 
 // Include generated resources
-sourceSets.main.resources { srcDir 'src/generated/resources' }
+sourceSets { // client and main
+    main {
+        java {
+            srcDirs = [
+                'src/main/java',
+                'src/client/java'
+            ]
+        }
+
+        resources {
+            srcDirs = [
+                'src/main/resources',
+                'src/client/resources',
+                'src/generated/resources'
+            ]
+        }
+    }
+}
 
 minecraft {
     runs {
@@ -22,31 +45,34 @@ minecraft {
             workingDir = layout.projectDirectory.dir('run')
 
             systemProperty 'eventbus.api.strictRuntimeChecks', 'true'
-            systemProperty 'forge.enabledGameTestNamespaces', 'block-finder'
+            systemProperty 'forge.enabledGameTestNamespaces', 'block_finder'
         }
 
-        register('client')
-
-        register('server') {
-            args '--nogui'
+        client {
+            args "--username", "echen0719"
         }
 
-        register('gameTestServer')
+        server {
+            args "--nogui"
+        }
 
-        register('data') {
+        gameTestServer {
+            // args "--nogui"
+        }
+
+        data {
             workingDir = layout.projectDirectory.dir('run-data')
 
-            args '--mod', 'block-finder', '--all', '--output', layout.projectDirectory.dir('src/generated/resources'), '--existing', layout.projectDirectory.dir('src/main/resources')
+            args("--mod", "block_finder", "--all", "--output", file("src/generated/resources"), "--existing", file("src/main/resources"))
         }
     }
 }
 
 repositories {
     minecraft.mavenizer(it)
+    mavenCentral()
     maven fg.forgeMaven
     maven fg.minecraftLibsMaven
-    mavenCentral()
-    maven { url 'https://maven.fabricmc.net/' }
 }
 
 dependencies {
@@ -54,6 +80,10 @@ dependencies {
     annotationProcessor 'net.minecraftforge:eventbus-validator:7.0.1'
     
     implementation project(':common')
+}
+
+tasks.named("jar", Jar).configure {
+    from(project(":common").sourceSets.main.output)
 }
 
 tasks.withType(JavaCompile).configureEach {

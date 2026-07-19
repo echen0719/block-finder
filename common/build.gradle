@@ -14,7 +14,7 @@ repositories {
 sourceSets {
 	main {
 		java {
-			srcDirs = ['src/client/java']
+			srcDirs = ['src/client/java', 'src/main/java']
 		}
 		resources {
 			srcDirs = ['src/client/resources', 'src/main/resources']
@@ -33,6 +33,11 @@ tasks.withType(JavaCompile).configureEach {
 
 java {
 	withSourcesJar()
+
 	sourceCompatibility = JavaVersion.VERSION_25
 	targetCompatibility = JavaVersion.VERSION_25
+
+	toolchain {
+        languageVersion = JavaLanguageVersion.of(25)
+    }
 }
