@@ -1,0 +1,37 @@
+# See https://docs.minecraftforge.net/en/1.21.x/gettingstarted/modfiles/#modstoml
+# There are lots of things you can do with the mods.toml, and not all fields are included with this MDK
+# References: https://github.com/MinecraftForge/MDKExamples
+
+modLoader="javafml"
+loaderVersion="[65,)"
+license="CC BY-NC-SA 4.0"
+issueTrackerURL="https://github.com/echen0719/block-finder/issues" #optional
+#clientSideOnly=true #optional, default=false
+
+[[mods]]
+modId="block-finder"
+version="1.1.2"
+displayName="Block Finder"
+#updateJSONURL="https://example.com/updates.json" #optional
+displayURL="https://echen0719.github.io/" #optional
+logoFile="assets/block-finder/icon.png"
+#credits="echen0719" #optional
+authors="echen0719" #optional
+#displayTest="MATCH_VERSION" #optional, default=MATCH_VERSION when not clientSideOnly, else IGNORE_ALL_VERSION
+
+description="Find blocks in a singleplayer or multiplayer world" '''Example mod description.
+Newline characters can be used like this, and rendered on the mods screen properly.'''
+
+[[dependencies.examplemod]] #recommended
+    modId="forge"
+    mandatory=true
+    versionRange="[65,)"
+    ordering="NONE"
+    side="BOTH"
+
+[[dependencies.examplemod]] #recommended
+    modId="minecraft"
+    mandatory=true
+    versionRange="[26.2,26.3,)"
+    ordering="NONE"
+    side="BOTH"
