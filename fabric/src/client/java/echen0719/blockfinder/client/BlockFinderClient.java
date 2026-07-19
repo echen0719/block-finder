@@ -136,7 +136,12 @@ public class BlockFinderClient implements ClientModInitializer {
 
 	public static void showHUD() {
 		if (!hudRegistered) {
-			HudElementRegistry.addLast(Identifier.fromNamespaceAndPath("blockfinder", "hud_info"), HUDInfo.hudElement);
+			HudElementRegistry.addLast(
+				Identifier.fromNamespaceAndPath("blockfinder", "hud_info"), (context, deltaTracker) -> {
+					HUDInfo.render(context);
+				}
+			);
+				
 			hudRegistered = true;
     	}
 	}
