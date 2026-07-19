@@ -161,7 +161,7 @@ public class BlockFinderClient {
 	public static void showHUD(RegisterGuiLayersEvent event) {
 		if (!hudRegistered) {
 			event.registerAboveAll(Identifier.fromNamespaceAndPath(MOD_ID, "hud_info"), (graphics, deltaTracker) -> {
-            	HUDInfo.render(graphics);
+            	HUDInfo.render(graphics, menuScreen.getActivePool());
         	});
 
 			hudRegistered = true;

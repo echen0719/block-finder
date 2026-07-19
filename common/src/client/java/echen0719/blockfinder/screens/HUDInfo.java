@@ -8,7 +8,6 @@ import net.minecraft.network.chat.FormattedText;
 
 import java.util.List;
 
-import echen0719.blockfinder.screens.menuScreen;
 import echen0719.blockfinder.client.BlockScanner;
 import echen0719.blockfinder.screens.blockConfig;
 
@@ -30,11 +29,11 @@ public class HUDInfo {
     private static int black = 0xFF000000;
     private static int red = 0xFFFF5555;
 
-    public static void render(GuiGraphicsExtractor context) {
+    public static void render(GuiGraphicsExtractor context, List<blockConfig> activePool) {
         Minecraft client = Minecraft.getInstance();
 
         boolean hasError = errorMessage != null;
-        if (!showHUD || (menuScreen.activePool.isEmpty() && !hasError)) {
+        if (!showHUD || (activePool.isEmpty() && !hasError)) {
             return;
         }
 
@@ -55,10 +54,10 @@ public class HUDInfo {
         int itemHeight = 24;
         int headerHeight = 20; // for "Found Blocks: " text
 
-        int boxHeight = headerHeight + (menuScreen.activePool.size() * itemHeight) + 5;
+        int boxHeight = headerHeight + (activePool.size() * itemHeight) + 5;
         int boxWidth = 100;
 
-        for (blockConfig config : menuScreen.activePool) {
+        for (blockConfig config : activePool) {
             String name = config.block.getName().getString();
             String foundCount = "0";
 
@@ -83,7 +82,7 @@ public class HUDInfo {
         int currentY = startY + headerHeight;
 
         // pasted over from menuScreen
-        for (blockConfig config : menuScreen.activePool) {
+        for (blockConfig config : activePool) {
             String name = config.block.getName().getString();
             String foundCount = "0";
 
