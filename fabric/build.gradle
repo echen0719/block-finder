@@ -32,16 +32,8 @@ dependencies {
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
-    
-	implementation project(':common')
-}
 
-sourceSets {
-	main {
-		resources {
-			srcDirs += project(':common').sourceSets.main.resources.srcDirs
-		}
-	}
+	implementation project(':common')
 }
 
 processResources {
@@ -71,7 +63,7 @@ jar {
 	def projectName = project.name
 	inputs.property "projectName", projectName
 
-	// from(project(':common').sourceSets.main.output)
+	from(project(':common').sourceSets.main.output)
 
 	from("LICENSE") {
 		rename { "${it}_$projectName"}
