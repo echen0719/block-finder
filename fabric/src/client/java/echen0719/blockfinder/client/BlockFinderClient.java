@@ -122,10 +122,10 @@ public class BlockFinderClient implements ClientModInitializer {
 					} // prevents ConcurrentModificationException
 
 					if (!visiblePositions.isEmpty()) {
-						BlockDrawer.drawOutline(context, visiblePositions, config.color);
+						BlockDrawer.drawOutline(context.poseStack(), visiblePositions, config.color);
 
 						if (config.drawTracer) {
-							// BlockDrawer.drawTracerLines(context, visiblePositions, config.color);
+							// BlockDrawer.drawTracerLines(context.poseStack(), visiblePositions, config.color);
 							// until I implement this...
 						}
 					}

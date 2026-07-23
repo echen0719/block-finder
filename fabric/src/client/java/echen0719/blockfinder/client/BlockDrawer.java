@@ -32,20 +32,16 @@ import org.joml.Matrix4fStack;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
-import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderContext;
-
-// https://modrinth.com/mod/block-hightlightfx saved the day!!
-
 public class BlockDrawer {
     private static Minecraft client = Minecraft.getInstance();
 
-    private static final RenderPipeline seeThroughLines = RenderPipelines.register(RenderPipeline.builder(
+    private static final RenderPipeline seeThroughLines = RenderPipeline.builder(
         RenderPipelines.LINES_SNIPPET).
         withLocation(Identifier.fromNamespaceAndPath("blockfinder", "pipeline/see_through_lines")).
         withVertexBinding(0, DefaultVertexFormat.POSITION_COLOR_NORMAL_LINE_WIDTH).
         withCull(false).withPrimitiveTopology(PrimitiveTopology.LINES).
         withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false)
-    ).build());
+    ).build();
 
     // caching instead of rebuilding every update
     private static Map<Integer, Integer> indexCountCache = new HashMap<>();
@@ -149,7 +145,7 @@ public class BlockDrawer {
         }
     }
 
-    public static void drawOutline(LevelRenderContext context, List<BlockPos> positions, Object[] color) {
+    public static void drawOutline(PoseStack matrices, List<BlockPos> positions, Object[] color) {
         if (client.level == null || positions == null || positions.isEmpty()) return;
         
         int colorKey = getColor(color);
@@ -160,9 +156,6 @@ public class BlockDrawer {
 
         GpuBuffer vertexBuffer = vertexBufferCache.get(colorKey);
         int indexCount = indexCountCache.get(colorKey);
-
-        PoseStack matrices = context.poseStack(); // i assume this is close to CFrames in Roblox
-        if (matrices == null) return;
 
         Vec3 cameraPosition = client.gameRenderer.mainCamera().position();
         Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
@@ -207,7 +200,7 @@ public class BlockDrawer {
         }
     }
 
-    public static void drawTracerLines(LevelRenderContext context, List<BlockPos> positions, Object[] color) {
+    public static void drawTracerLines(PoseStack matrices, List<BlockPos> positions, Object[] color) {
         if (client.level == null || positions == null || positions.isEmpty()) return;
         
         int colorKey = getColor(color);
@@ -218,9 +211,6 @@ public class BlockDrawer {
 
         GpuBuffer tracerVertexBuffer = tracerVertexBufferCache.get(colorKey);
         int tracerIndexCount = tracerIndexCountCache.get(colorKey);
-        
-        PoseStack matrices = context.poseStack();
-        if (matrices == null) return;
 
         Vec3 cameraPosition = client.gameRenderer.mainCamera().position();
         Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();

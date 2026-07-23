@@ -147,10 +147,10 @@ public class BlockFinderClient {
 				} // prevents ConcurrentModificationException
 
 				if (!visiblePositions.isEmpty()) {
-					BlockDrawer.drawOutline(event, visiblePositions, config.color);
+					BlockDrawer.drawOutline(event.getPoseStack(), visiblePositions, config.color);
 
 					if (config.drawTracer) {
-						// BlockDrawer.drawTracerLines(event, visiblePositions, config.color);
+						// BlockDrawer.drawTracerLines(event.getPoseStack(), visiblePositions, config.color);
 						// until I implement this...
 					}
 				}

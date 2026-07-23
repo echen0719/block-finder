@@ -32,10 +32,6 @@ import org.joml.Matrix4fStack;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
-import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
-
-// https://modrinth.com/mod/block-hightlightfx saved the day!!
-
 public class BlockDrawer {
     private static Minecraft client = Minecraft.getInstance();
 
@@ -149,7 +145,7 @@ public class BlockDrawer {
         }
     }
 
-    public static void drawOutline(RenderLevelStageEvent context, List<BlockPos> positions, Object[] color) {
+    public static void drawOutline(PoseStack matrices, List<BlockPos> positions, Object[] color) {
         if (client.level == null || positions == null || positions.isEmpty()) return;
         
         int colorKey = getColor(color);
@@ -160,9 +156,6 @@ public class BlockDrawer {
 
         GpuBuffer vertexBuffer = vertexBufferCache.get(colorKey);
         int indexCount = indexCountCache.get(colorKey);
-
-        PoseStack matrices = context.getPoseStack(); // i assume this is close to CFrames in Roblox
-        if (matrices == null) return;
 
         Vec3 cameraPosition = client.gameRenderer.mainCamera().position();
         Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
@@ -207,7 +200,7 @@ public class BlockDrawer {
         }
     }
 
-    public static void drawTracerLines(RenderLevelStageEvent context, List<BlockPos> positions, Object[] color) {
+    public static void drawTracerLines(PoseStack matrices, List<BlockPos> positions, Object[] color) {
         if (client.level == null || positions == null || positions.isEmpty()) return;
         
         int colorKey = getColor(color);
@@ -218,9 +211,6 @@ public class BlockDrawer {
 
         GpuBuffer tracerVertexBuffer = tracerVertexBufferCache.get(colorKey);
         int tracerIndexCount = tracerIndexCountCache.get(colorKey);
-        
-        PoseStack matrices = context.getPoseStack();
-        if (matrices == null) return;
 
         Vec3 cameraPosition = client.gameRenderer.mainCamera().position();
         Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
