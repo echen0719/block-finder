@@ -58,8 +58,8 @@ runs {
 
     clientData {
         arguments.addAll "--mod", "block_finder",
-            "--all", "--output", file("src/generated/resources"),
-            "--existing", file("src/main/resources")
+            "--all", "--output", file("src/generated/resources").absolutePath,
+            "--existing", file("src/main/resources").absolutePath
     }
 }
 
