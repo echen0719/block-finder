@@ -21,8 +21,11 @@ loom {
 		"block_finder" {
 			sourceSet sourceSets.main
 			sourceSet sourceSets.client
+			sourceSet("main", project(":common"))
 		}
 	}
+
+	accessWidenerPath = project(":common").file("src/main/resources/blockfinder.accesswidener")
 }
 
 dependencies {
