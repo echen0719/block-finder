@@ -185,8 +185,7 @@ public class BlockFinderClient {
 					BlockDrawer.drawOutline(event.getPoseStack(), visiblePositions, config.color);
 
 					if (config.drawTracer) {
-						// BlockDrawer.drawTracerLines(event.getPoseStack(), visiblePositions, config.color);
-						// until I implement this...
+						BlockDrawer.drawTracerLines(event.getPoseStack(), visiblePositions, config.color);
 					}
 				}
 			}
