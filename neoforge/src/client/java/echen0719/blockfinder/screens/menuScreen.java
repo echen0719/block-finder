@@ -88,7 +88,7 @@ public class menuScreen extends Screen {
             HUDInfo.showHUD = selected;
         });
 
-        drawLinesCheckbox = guiUtils.createCheckbox(this, "Draw Lines to Block", this.width / 2 - 60, 160, selectedConfig != null && selectedConfig.drawTracer, (checkbox, selected) -> {
+        drawLinesCheckbox = guiUtils.createCheckbox(this, "Draw Lines to Block (beta)", this.width / 2 - 60, 160, selectedConfig != null && selectedConfig.drawTracer, (checkbox, selected) -> {
             if (selectedConfig != null) {
                 selectedConfig.drawTracer = selected;
             }
@@ -99,7 +99,7 @@ public class menuScreen extends Screen {
         this.addRenderableWidget(minYBox);
         this.addRenderableWidget(maxYBox);
 
-        // this.addRenderableWidget(drawLinesCheckbox);
+        this.addRenderableWidget(drawLinesCheckbox);
 
         this.addRenderableWidget(autoRescanCheckbox);
         this.addRenderableWidget(showHUDCheckbox);
@@ -351,7 +351,10 @@ public class menuScreen extends Screen {
                     selectedConfig = null;
                     return true;
                 }
-                super.mouseClicked(event, isDoubleClick);
+                
+                if (super.mouseClicked(event, isDoubleClick)) {
+                    return true; // to solve a random ahh bug
+                }
             }
 
             if (blockDropdown.onItemClick(x, y)) {
@@ -413,13 +416,13 @@ public class menuScreen extends Screen {
                         minYBox.setValue(config.minY);
                         maxYBox.setValue(config.maxY);
 
-                        // this.removeWidget(drawLinesCheckbox);
-                        drawLinesCheckbox = guiUtils.createCheckbox(this, "Draw Lines to Block", this.width / 2 - 60, 160, selectedConfig.drawTracer, (checkbox, selected) -> {
+                        this.removeWidget(drawLinesCheckbox);
+                        drawLinesCheckbox = guiUtils.createCheckbox(this, "Draw Lines to Block (beta)", this.width / 2 - 60, 160, selectedConfig.drawTracer, (checkbox, selected) -> {
                             if (selectedConfig != null) {
                                 selectedConfig.drawTracer = selected;
                             }
                         });
-                        // this.addRenderableWidget(drawLinesCheckbox);
+                        this.addRenderableWidget(drawLinesCheckbox);
                     }
                     return true;
                 }
@@ -526,13 +529,13 @@ public class menuScreen extends Screen {
             minYBox.setValue(selectedConfig.minY);
             maxYBox.setValue(selectedConfig.maxY);
 
-            // this.removeWidget(drawLinesCheckbox);
-            drawLinesCheckbox = guiUtils.createCheckbox(this, "Draw Lines to Block", this.width / 2 - 60, 160, selectedConfig.drawTracer, (checkbox, selected) -> {
+            this.removeWidget(drawLinesCheckbox);
+            drawLinesCheckbox = guiUtils.createCheckbox(this, "Draw Lines to Block (beta)", this.width / 2 - 60, 160, selectedConfig.drawTracer, (checkbox, selected) -> {
                 if (selectedConfig != null) {
                     selectedConfig.drawTracer = selected;
                 }
             });
-            // this.addRenderableWidget(drawLinesCheckbox);
+            this.addRenderableWidget(drawLinesCheckbox);
         }
     }
 

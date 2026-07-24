@@ -125,8 +125,7 @@ public class BlockFinderClient implements ClientModInitializer {
 						BlockDrawer.drawOutline(context.poseStack(), visiblePositions, config.color);
 
 						if (config.drawTracer) {
-							// BlockDrawer.drawTracerLines(context.poseStack(), visiblePositions, config.color);
-							// until I implement this...
+							BlockDrawer.drawTracerLines(context.poseStack(), visiblePositions, config.color);
 						}
 					}
 				}

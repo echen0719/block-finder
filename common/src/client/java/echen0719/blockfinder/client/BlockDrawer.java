@@ -232,9 +232,12 @@ public class BlockDrawer {
                 float dz = (float)(position.getZ() + 0.5 - cameraPosition.z);
 
                 modelViewStack.pushMatrix();
-                modelViewStack.scale(dx, dy, dz); // create unit line and stretch it to camera
 
-                Matrix4f matrix = new Matrix4f(modelViewStack); // don't know what this does
+                // create unit line and stretch it to camera
+                modelViewStack.translate(0.0f, -0.5f, 0.0f); // 1.8 meters player
+                modelViewStack.scale(dx, dy + 0.5f, dz); 
+
+                Matrix4f matrix = new Matrix4f(modelViewStack);
                 modelViewStack.popMatrix();
                 
                 GpuBufferSlice[] gpubufferslice = RenderSystem.getDynamicUniforms().writeTransforms(
