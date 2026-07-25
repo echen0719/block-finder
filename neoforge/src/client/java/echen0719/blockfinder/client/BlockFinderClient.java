@@ -24,7 +24,7 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent; // HUD
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
-import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
+import net.neoforged.neoforge.event.level.BlockEvent.BreakEvent;
 
 import echen0719.blockfinder.screens.HUDInfo;
 import echen0719.blockfinder.screens.menuScreen;
@@ -106,7 +106,7 @@ public class BlockFinderClient {
 	}
 
 	@SubscribeEvent
-	public void playerBlockBreak(BreakBlockEvent event) {
+	public void playerBlockBreak(BreakEvent event) {
 		// remove block from positions if it is broken
 		BlockPos position = event.getPos();
 		Block brokenBlock = event.getState().getBlock();

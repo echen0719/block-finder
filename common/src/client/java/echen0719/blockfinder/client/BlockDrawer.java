@@ -1,18 +1,17 @@
 package echen0719.blockfinder.client;
 
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.DynamicUniforms;
-import net.minecraft.client.renderer.RenderPipelines;
-import net.minecraft.core.BlockPos;
-import net.minecraft.resources.Identifier;
-import net.minecraft.world.phys.Vec3;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.OptionalDouble;
+import java.util.OptionalInt;
 
-import com.mojang.blaze3d.vertex.BufferBuilder;
-import com.mojang.blaze3d.vertex.ByteBufferBuilder;
-import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.MeshData;
-import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.PrimitiveTopology;
+import org.joml.Matrix4f;
+import org.joml.Matrix4fStack;
+import org.joml.Vector3f;
+import org.joml.Vector4f;
+
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
 import com.mojang.blaze3d.pipeline.DepthStencilState;
@@ -20,17 +19,19 @@ import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.CompareOp;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.BufferBuilder;
+import com.mojang.blaze3d.vertex.ByteBufferBuilder;
+import com.mojang.blaze3d.vertex.DefaultVertexFormat;
+import com.mojang.blaze3d.vertex.MeshData;
+import com.mojang.blaze3d.vertex.PoseStack;
+import com.mojang.blaze3d.vertex.VertexFormat;
 
-import java.util.OptionalDouble;
-import java.util.Optional;
-import java.util.List;
-import java.util.HashMap;
-import java.util.Map;
-
-import org.joml.Matrix4f;
-import org.joml.Matrix4fStack;
-import org.joml.Vector3f;
-import org.joml.Vector4f;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.renderer.DynamicUniforms;
+import net.minecraft.client.renderer.RenderPipelines;
+import net.minecraft.core.BlockPos;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.phys.Vec3;
 
 public class BlockDrawer {
     private static Minecraft client = Minecraft.getInstance();
@@ -38,9 +39,8 @@ public class BlockDrawer {
     private static final RenderPipeline seeThroughLines = RenderPipeline.builder(
         RenderPipelines.LINES_SNIPPET).
         withLocation(Identifier.fromNamespaceAndPath("blockfinder", "pipeline/see_through_lines")).
-        withVertexBinding(0, DefaultVertexFormat.POSITION_COLOR_NORMAL_LINE_WIDTH).
-        withCull(false).withPrimitiveTopology(PrimitiveTopology.LINES).
-        withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false)
+        withVertexFormat(DefaultVertexFormat.POSITION_COLOR_NORMAL_LINE_WIDTH, VertexFormat.Mode.LINES).
+        withCull(false).withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false)
     ).build();
 
     // caching instead of rebuilding every update
@@ -50,7 +50,7 @@ public class BlockDrawer {
     private static Map<Integer, Integer> tracerIndexCountCache = new HashMap<>();
     private static Map<Integer, GpuBuffer> tracerVertexBufferCache = new HashMap<>();
 
-    private static final RenderSystem.AutoStorageIndexBuffer indices = RenderSystem.getSequentialBuffer(PrimitiveTopology.LINES);
+    private static final RenderSystem.AutoStorageIndexBuffer indices = RenderSystem.getSequentialBuffer(VertexFormat.Mode.LINES);
 
     public static int getColor(Object[] color) {
         int r = (Integer) color[0];
@@ -85,8 +85,8 @@ public class BlockDrawer {
         float a = (Float) color[3];
 
         // https://github.com/AdvancedXRay/XRay-Mod/blob/main/common/src/main/java/pro/mikey/xray/core/OutlineRender.java
-        ByteBufferBuilder byteBufferBuilder = new ByteBufferBuilder(seeThroughLines.getVertexFormatBinding(0).getVertexSize() * 1024);
-        BufferBuilder bufferBuilder = new BufferBuilder(byteBufferBuilder, seeThroughLines.getPrimitiveTopology(), seeThroughLines.getVertexFormatBinding(0));
+        ByteBufferBuilder byteBufferBuilder = new ByteBufferBuilder(seeThroughLines.getVertexFormat().getVertexSize() * 1024);
+        BufferBuilder bufferBuilder = new BufferBuilder(byteBufferBuilder, seeThroughLines.getVertexFormatMode(), seeThroughLines.getVertexFormat());
 
         Matrix4f matrix = new Matrix4f(); 
 
@@ -128,8 +128,8 @@ public class BlockDrawer {
             indexCountCache.put(colorKey, indexCount);
         }
 
-        ByteBufferBuilder tracerByteBufferBuilder = new ByteBufferBuilder(seeThroughLines.getVertexFormatBinding(0).getVertexSize() * 1024);
-        BufferBuilder tracerBufferBuilder = new BufferBuilder(tracerByteBufferBuilder, seeThroughLines.getPrimitiveTopology(), seeThroughLines.getVertexFormatBinding(0));
+        ByteBufferBuilder tracerByteBufferBuilder = new ByteBufferBuilder(seeThroughLines.getVertexFormat().getVertexSize() * 1024);
+        BufferBuilder tracerBufferBuilder = new BufferBuilder(tracerByteBufferBuilder, seeThroughLines.getVertexFormatMode(), seeThroughLines.getVertexFormat());
         
         Matrix4f tracerMatrix = new Matrix4f();
         drawEdge(tracerBufferBuilder, tracerMatrix, 0, 0, 0, 1, 1, 1, r, g, b, a, lineWidth);
@@ -157,42 +157,47 @@ public class BlockDrawer {
         GpuBuffer vertexBuffer = vertexBufferCache.get(colorKey);
         int indexCount = indexCountCache.get(colorKey);
 
-        Vec3 cameraPosition = client.gameRenderer.mainCamera().position();
+        Vec3 cameraPosition = client.gameRenderer.getMainCamera().position();
         Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
 
-        var colorTextureView = client.gameRenderer.mainRenderTarget().getColorTextureView();
-        var depthTextureView = client.gameRenderer.mainRenderTarget().getDepthTextureView();
+        List<GpuBufferSlice> transformSlices = new ArrayList<>();
+        for (BlockPos position : positions) {
+            modelViewStack.pushMatrix();
+            modelViewStack.translate(
+                (float)(position.getX() - cameraPosition.x), 
+                (float)(position.getY() - cameraPosition.y), 
+                (float)(position.getZ() - cameraPosition.z)
+            );
+            
+            Matrix4f matrix = new Matrix4f(modelViewStack); // don't know what this does
+            modelViewStack.popMatrix();
+
+            GpuBufferSlice[] gpubufferslice = RenderSystem.getDynamicUniforms().writeTransforms(
+                new DynamicUniforms.Transform(
+                    matrix,
+                    new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), 
+                    new Vector3f(), 
+                    new Matrix4f()
+                )
+            );
+
+            transformSlices.add(gpubufferslice[0]);
+        }
+
+        var colorTextureView = client.getMainRenderTarget().getColorTextureView();
+        var depthTextureView = client.getMainRenderTarget().getDepthTextureView();
 
         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> 
-        "blockfinder_outline", colorTextureView, Optional.empty(), depthTextureView, OptionalDouble.empty())) { 
+        "blockfinder_outline", colorTextureView, OptionalInt.empty(), depthTextureView, OptionalDouble.empty())) { 
             RenderSystem.bindDefaultUniforms(renderPass);
 
-            renderPass.setVertexBuffer(0, vertexBuffer.slice());
+            renderPass.setVertexBuffer(0, vertexBuffer);
             renderPass.setIndexBuffer(indices.getBuffer(indexCount), indices.type());
             renderPass.setPipeline(seeThroughLines);
 
-            for (BlockPos position : positions) {
-                modelViewStack.pushMatrix();
-                modelViewStack.translate(
-                    (float)(position.getX() - cameraPosition.x), 
-                    (float)(position.getY() - cameraPosition.y), 
-                    (float)(position.getZ() - cameraPosition.z)
-                );
-                
-                Matrix4f matrix = new Matrix4f(modelViewStack); // don't know what this does
-                modelViewStack.popMatrix();
-
-                GpuBufferSlice[] gpubufferslice = RenderSystem.getDynamicUniforms().writeTransforms(
-                    new DynamicUniforms.Transform(
-                        matrix,
-                        new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), 
-                        new Vector3f(), 
-                        new Matrix4f()
-                    )
-                );
-
-                renderPass.setUniform("DynamicTransforms", gpubufferslice[0]);
-                renderPass.drawIndexed(indexCount, 1, 0, 0, 0);
+            for (int i = 0; i < positions.size(); i++) {
+                renderPass.setUniform("DynamicTransforms", transformSlices.get(i));
+                renderPass.drawIndexed(0, 0, indexCount, 1);
             }
         }
         catch (Exception e) {
@@ -212,44 +217,50 @@ public class BlockDrawer {
         GpuBuffer tracerVertexBuffer = tracerVertexBufferCache.get(colorKey);
         int tracerIndexCount = tracerIndexCountCache.get(colorKey);
 
-        Vec3 cameraPosition = client.gameRenderer.mainCamera().position();
+        Vec3 cameraPosition = client.gameRenderer.getMainCamera().position();
         Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
-
-        var colorTextureView = client.gameRenderer.mainRenderTarget().getColorTextureView();
-        var depthTextureView = client.gameRenderer.mainRenderTarget().getDepthTextureView();
         
+        List<GpuBufferSlice> transformSlices = new ArrayList<>();
+        for (BlockPos position : positions) {
+            float dx = (float)(position.getX() + 0.5 - cameraPosition.x);
+            float dy = (float)(position.getY() + 0.5 - cameraPosition.y);
+            float dz = (float)(position.getZ() + 0.5 - cameraPosition.z);
+
+            modelViewStack.pushMatrix();
+
+            // create unit line and stretch it to camera
+            modelViewStack.translate(0.0f, -0.5f, 0.0f); // 1.8 meters player
+            modelViewStack.scale(dx, dy + 0.5f, dz); 
+
+            Matrix4f matrix = new Matrix4f(modelViewStack);
+            modelViewStack.popMatrix();
+            
+            GpuBufferSlice[] gpubufferslice = RenderSystem.getDynamicUniforms().writeTransforms(
+                new DynamicUniforms.Transform(
+                    matrix,
+                    new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), 
+                    new Vector3f(), 
+                    new Matrix4f()
+                )
+            );
+            
+            transformSlices.add(gpubufferslice[0]);
+        }
+
+        var colorTextureView = client.getMainRenderTarget().getColorTextureView();
+        var depthTextureView = client.getMainRenderTarget().getDepthTextureView();
+
         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> 
-        "blockfinder_outline", colorTextureView, Optional.empty(), depthTextureView, OptionalDouble.empty())) { 
+        "blockfinder_outline", colorTextureView, OptionalInt.empty(), depthTextureView, OptionalDouble.empty())) { 
             RenderSystem.bindDefaultUniforms(renderPass);
             
-            renderPass.setVertexBuffer(0, tracerVertexBuffer.slice());
+            renderPass.setVertexBuffer(0, tracerVertexBuffer);
             renderPass.setIndexBuffer(indices.getBuffer(tracerIndexCount), indices.type());
             renderPass.setPipeline(seeThroughLines);
             
-            for (BlockPos position : positions) {
-                float dx = (float)(position.getX() + 0.5 - cameraPosition.x);
-                float dy = (float)(position.getY() + 0.5 - cameraPosition.y);
-                float dz = (float)(position.getZ() + 0.5 - cameraPosition.z);
-
-                modelViewStack.pushMatrix();
-
-                // create unit line and stretch it to camera
-                modelViewStack.translate(0.0f, -0.5f, 0.0f); // 1.8 meters player
-                modelViewStack.scale(dx, dy + 0.5f, dz); 
-
-                Matrix4f matrix = new Matrix4f(modelViewStack);
-                modelViewStack.popMatrix();
-                
-                GpuBufferSlice[] gpubufferslice = RenderSystem.getDynamicUniforms().writeTransforms(
-                    new DynamicUniforms.Transform(
-                        matrix,
-                        new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), 
-                        new Vector3f(), 
-                        new Matrix4f()
-                    )
-                );
-                renderPass.setUniform("DynamicTransforms", gpubufferslice[0]);
-                renderPass.drawIndexed(tracerIndexCount, 1, 0, 0, 0);
+            for (int i = 0; i < positions.size(); i++) {
+                renderPass.setUniform("DynamicTransforms", transformSlices.get(i));
+                renderPass.drawIndexed(0, 0, tracerIndexCount, 1);
             }
         }
         catch (Exception e) {
