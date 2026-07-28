@@ -16,7 +16,7 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.tinyfd.TinyFileDialogs;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.core.registries.BuiltInRegistries;
@@ -441,7 +441,7 @@ public class menuScreen extends Screen {
         return super.mouseReleased(event);
     }
 
-    private void renderActivePool(GuiGraphicsExtractor context, int mouseX, int mouseY) {
+    private void renderActivePool(GuiGraphics context, int mouseX, int mouseY) {
         int startX = 10;
         int startY = 60;
         int itemHeight = 24;
@@ -452,7 +452,7 @@ public class menuScreen extends Screen {
         int currentY = startY;
         int maxWidth = this.width - 10;
 
-        context.text(this.font, Component.literal("Active Finders:"), startX, startY, white);
+        context.drawString(this.font, Component.literal("Active Finders:"), startX, startY, white);
         currentY += 20;
 
         for (int i = 0; i < activePool.size(); i++) {
@@ -477,20 +477,20 @@ public class menuScreen extends Screen {
 
             context.fill(currentX, currentY, currentX + itemWidth, currentY + itemHeight, backgroundColor);
 
-            context.item(new ItemStack(config.block), currentX + 4, currentY + 4);
-            context.text(this.font, name, currentX + 24, currentY + (itemHeight - 8) / 2, white);
+            context.renderItem(new ItemStack(config.block), currentX + 4, currentY + 4);
+            context.drawString(this.font, name, currentX + 24, currentY + (itemHeight - 8) / 2, white);
 
             int colorX = currentX + 24 + textWidth + 6; // auto calc based on length of name
             context.fill(colorX, currentY + 6, colorX + 12, currentY + 18, colorUtils.arrayToInt(config.color));
 
             int closeX = colorX + 18;
-            context.text(this.font, "x", closeX, currentY + (itemHeight - 8) / 2, 0xFFFF5555);
+            context.drawString(this.font, "x", closeX, currentY + (itemHeight - 8) / 2, 0xFFFF5555);
 
             currentX += itemWidth + horizontalPadding;
         }
     }
 
-    private void renderSubmenuBackground(GuiGraphicsExtractor context) {
+    private void renderSubmenuBackground(GuiGraphics context) {
         int panelWidth = 260;
         int panelHeight = 100;
         int panelX = (this.width - panelWidth) / 2;
@@ -501,15 +501,15 @@ public class menuScreen extends Screen {
         context.fill(panelX, panelY, panelX + panelWidth, panelY + panelHeight, darkTranslucentGray);
     }
 
-    private void renderSubmenu(GuiGraphicsExtractor context) {
+    private void renderSubmenu(GuiGraphics context) {
         if (selectedConfig != null) {
             radiusSizeBox.setX(this.width / 2 - 120); radiusSizeBox.setY(125);
             minYBox.setX(this.width / 2 + 20); minYBox.setY(125);
             maxYBox.setX(this.width / 2 + 70); maxYBox.setY(125);
 
-            context.centeredText(this.font, Component.literal("Editing: " + selectedConfig.block.getName().getString()), this.width / 2, 210, 0xFFFFFF55);
-            context.centeredText(this.font, Component.literal("Radius:"), this.width / 2 - 60, 110, white);
-            context.centeredText(this.font, Component.literal("Min Y  /  Max Y:"), this.width / 2 + 65, 110, white);
+            context.drawCenteredString(this.font, Component.literal("Editing: " + selectedConfig.block.getName().getString()), this.width / 2, 210, 0xFFFFFF55);
+            context.drawCenteredString(this.font, Component.literal("Radius:"), this.width / 2 - 60, 110, white);
+            context.drawCenteredString(this.font, Component.literal("Min Y  /  Max Y:"), this.width / 2 + 65, 110, white);
 
             drawLinesCheckbox.setX(this.width / 2 - 60);
             drawLinesCheckbox.setY(160);
@@ -540,8 +540,8 @@ public class menuScreen extends Screen {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
-        context.centeredText(this.font, Component.literal("Block Finder"), this.width / 2, 10, white);
+    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
+        context.drawCenteredString(this.font, Component.literal("Block Finder"), this.width / 2, 10, white);
 
         renderActivePool(context, mouseX, mouseY);
 
@@ -580,11 +580,11 @@ public class menuScreen extends Screen {
         renderSubmenu(context);
 
         if (blockDropdown != null) {
-            blockDropdown.extractWidgetRenderState(context, mouseX, mouseY, delta);
+            blockDropdown.render(context, mouseX, mouseY, delta);
         }
 
         blockDropdown.handleMouseDrag(mouseY);
 
-        super.extractRenderState(context, mouseX, mouseY, delta);
+        super.render(context, mouseX, mouseY, delta);
     }
 }

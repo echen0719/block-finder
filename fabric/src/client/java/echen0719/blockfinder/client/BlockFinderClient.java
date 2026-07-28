@@ -19,8 +19,8 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
-import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
-import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
+import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 
 import echen0719.blockfinder.screens.HUDInfo;
 import echen0719.blockfinder.screens.menuScreen;
@@ -44,7 +44,7 @@ public class BlockFinderClient implements ClientModInitializer {
         	folder.mkdirs();
     	}
 
-		scanKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+		scanKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(
 			"key.blockfinder.scan", 
 			InputConstants.Type.KEYSYM, 
 			GLFW.GLFW_KEY_V,
@@ -94,7 +94,7 @@ public class BlockFinderClient implements ClientModInitializer {
 			}
 		});
 
-		LevelRenderEvents.END_MAIN.register(context -> { // runs every frame
+		WorldRenderEvents.END_MAIN.register(context -> { // runs every frame
 			Minecraft client = Minecraft.getInstance();
 
 			if (BlockScanner.foundBlocks != null) {
@@ -122,10 +122,10 @@ public class BlockFinderClient implements ClientModInitializer {
 					} // prevents ConcurrentModificationException
 
 					if (!visiblePositions.isEmpty()) {
-						BlockDrawer.drawOutline(context.poseStack(), visiblePositions, config.color);
+						BlockDrawer.drawOutline(context.matrices(), visiblePositions, config.color);
 
 						if (config.drawTracer) {
-							BlockDrawer.drawTracerLines(context.poseStack(), visiblePositions, config.color);
+							BlockDrawer.drawTracerLines(context.matrices(), visiblePositions, config.color);
 						}
 					}
 				}

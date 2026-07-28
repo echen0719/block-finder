@@ -14,9 +14,8 @@ import org.joml.Vector4f;
 
 import com.mojang.blaze3d.buffers.GpuBuffer;
 import com.mojang.blaze3d.buffers.GpuBufferSlice;
-import com.mojang.blaze3d.pipeline.DepthStencilState;
+import com.mojang.blaze3d.platform.DepthTestFunction;
 import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.platform.CompareOp;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
@@ -36,12 +35,10 @@ import net.minecraft.world.phys.Vec3;
 public class BlockDrawer {
     private static Minecraft client = Minecraft.getInstance();
 
-    private static final RenderPipeline seeThroughLines = RenderPipeline.builder(
-        RenderPipelines.LINES_SNIPPET).
+    private static final RenderPipeline seeThroughLines = RenderPipeline.builder(RenderPipelines.LINES_SNIPPET).
         withLocation(Identifier.fromNamespaceAndPath("blockfinder", "pipeline/see_through_lines")).
         withVertexFormat(DefaultVertexFormat.POSITION_COLOR_NORMAL_LINE_WIDTH, VertexFormat.Mode.LINES).
-        withCull(false).withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false)
-    ).build();
+        withCull(false).withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST).build();
 
     // caching instead of rebuilding every update
     private static Map<Integer, Integer> indexCountCache = new HashMap<>();
