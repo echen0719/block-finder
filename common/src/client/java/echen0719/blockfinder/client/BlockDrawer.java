@@ -119,6 +119,8 @@ public class BlockDrawer {
         RenderSystem.disableCull();
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(false); 
+
+        RenderSystem.lineWidth(2.0f);
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
 
         vertexBuffer.drawWithShader(
@@ -170,7 +172,9 @@ public class BlockDrawer {
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableCull();
         RenderSystem.disableDepthTest();
-        RenderSystem.depthMask(false); 
+        RenderSystem.depthMask(false);
+
+        RenderSystem.lineWidth(2.0f);
         RenderSystem.setShader(GameRenderer::getPositionColorShader);
 
         vertexBuffer.drawWithShader(
