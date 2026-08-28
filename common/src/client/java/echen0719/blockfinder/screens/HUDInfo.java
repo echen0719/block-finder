@@ -37,6 +37,9 @@ public class HUDInfo {
             return;
         }
 
+        context.pose().pushPose();
+        context.pose().translate(0, 0, 1000); // above inventory
+
         if (hasError) { // render error message
             int boxHeight = 50;
             int boxWidth = 100;
@@ -46,8 +49,9 @@ public class HUDInfo {
 
             context.fill(startX - 1, startY - 1, startX + boxWidth + 1, startY + boxHeight + 1, black);
             context.fill(startX, startY, startX + boxWidth, startY + boxHeight, darkGray);
-            context.drawWordWrap(client.font, FormattedText.of(errorMessage), startX + 5, startY + 5, 90, red); 
-            // really useful method btw
+            context.drawWordWrap(client.font, FormattedText.of(errorMessage), startX + 5, startY + 5, 90, red); // really useful method btw
+
+            context.pose().popPose();
             return;
         }
 
@@ -99,5 +103,7 @@ public class HUDInfo {
 
             currentY += itemHeight;
         }
+
+        context.pose().popPose();
     }
 }
