@@ -3,7 +3,7 @@ package echen0719.blockfinder.client;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 
 import com.mojang.blaze3d.platform.InputConstants;
@@ -18,9 +18,9 @@ import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.fabric.api.event.player.PlayerBlockBreakEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
-import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
-import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
-import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
+import net.fabricmc.fabric.api.client.rendering.v1.HudRenderCallback;
+import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 
 import echen0719.blockfinder.screens.HUDInfo;
 import echen0719.blockfinder.screens.menuScreen;
@@ -30,9 +30,12 @@ public class BlockFinderClient implements ClientModInitializer {
 	public static menuScreen mainScreen;
 	public static boolean hudRegistered = false;
 
-	public static KeyMapping scanKey;
-	private static final KeyMapping.Category category = KeyMapping.Category.register(
-		Identifier.fromNamespaceAndPath("blockfinder", "menu")
+	private static final String category = "key.categories.blockfinder";
+	public static KeyMapping scanKey = new KeyMapping(
+		"key.blockfinder.scan", 
+		InputConstants.Type.KEYSYM, 
+		GLFW.GLFW_KEY_V,
+		category
 	);
 
 	@Override
@@ -44,7 +47,7 @@ public class BlockFinderClient implements ClientModInitializer {
         	folder.mkdirs();
     	}
 
-		scanKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+		scanKey = KeyBindingHelper.registerKeyBinding(new KeyMapping(
 			"key.blockfinder.scan", 
 			InputConstants.Type.KEYSYM, 
 			GLFW.GLFW_KEY_V,
@@ -55,7 +58,7 @@ public class BlockFinderClient implements ClientModInitializer {
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			while (scanKey.consumeClick()) {
 				mainScreen = new menuScreen();
-				client.setScreenAndShow(mainScreen);
+				client.setScreen(mainScreen);
 			}
 
 			if (BlockScanner.autoRescan && BlockScanner.autoRescanReady && client.player != null &&
@@ -94,7 +97,7 @@ public class BlockFinderClient implements ClientModInitializer {
 			}
 		});
 
-		LevelRenderEvents.END_MAIN.register(context -> { // runs every frame
+		WorldRenderEvents.LAST.register(context -> { // runs every frame
 			Minecraft client = Minecraft.getInstance();
 
 			if (BlockScanner.foundBlocks != null) {
@@ -122,10 +125,10 @@ public class BlockFinderClient implements ClientModInitializer {
 					} // prevents ConcurrentModificationException
 
 					if (!visiblePositions.isEmpty()) {
-						BlockDrawer.drawOutline(context.poseStack(), visiblePositions, config.color);
+						BlockDrawer.drawOutline(context.matrixStack(), visiblePositions, config.color);
 
 						if (config.drawTracer) {
-							BlockDrawer.drawTracerLines(context.poseStack(), visiblePositions, config.color);
+							BlockDrawer.drawTracerLines(context.matrixStack(), visiblePositions, config.color);
 						}
 					}
 				}
@@ -135,11 +138,9 @@ public class BlockFinderClient implements ClientModInitializer {
 
 	public static void showHUD() {
 		if (!hudRegistered) {
-			HudElementRegistry.addLast(
-				Identifier.fromNamespaceAndPath("blockfinder", "hud_info"), (context, deltaTracker) -> {
-					HUDInfo.render(context, menuScreen.getActivePool());
-				}
-			);
+			HudRenderCallback.EVENT.register((drawContext, tickDelta) -> {
+                HUDInfo.render(drawContext, menuScreen.getActivePool());
+            });
 				
 			hudRegistered = true;
     	}

@@ -2,7 +2,7 @@ package echen0719.blockfinder.screens;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.network.chat.FormattedText;
 
@@ -29,13 +29,16 @@ public class HUDInfo {
     private static int black = 0xFF000000;
     private static int red = 0xFFFF5555;
 
-    public static void render(GuiGraphicsExtractor context, List<blockConfig> activePool) {
+    public static void render(GuiGraphics context, List<blockConfig> activePool) {
         Minecraft client = Minecraft.getInstance();
 
         boolean hasError = errorMessage != null;
         if (!showHUD || (activePool.isEmpty() && !hasError)) {
             return;
         }
+
+        context.pose().pushPose();
+        context.pose().translate(0, 0, 1000); // above inventory
 
         if (hasError) { // render error message
             int boxHeight = 50;
@@ -46,8 +49,9 @@ public class HUDInfo {
 
             context.fill(startX - 1, startY - 1, startX + boxWidth + 1, startY + boxHeight + 1, black);
             context.fill(startX, startY, startX + boxWidth, startY + boxHeight, darkGray);
-            context.textWithWordWrap(client.font, FormattedText.of(errorMessage), startX + 5, startY + 5, 90, red); 
-            // really useful method btw
+            context.drawWordWrap(client.font, FormattedText.of(errorMessage), startX + 5, startY + 5, 90, red); // really useful method btw
+
+            context.pose().popPose();
             return;
         }
 
@@ -77,7 +81,7 @@ public class HUDInfo {
 
         context.fill(startX - 1, startY - 1, startX + boxWidth + 1, startY + boxHeight + 1, black);
         context.fill(startX, startY, startX + boxWidth, startY + boxHeight, darkGray);
-        context.centeredText(client.font, "Found Blocks: ", startX + boxWidth / 2, startY + 5, 0xFFFFFFFF);
+        context.drawCenteredString(client.font, "Found Blocks: ", startX + boxWidth / 2, startY + 5, 0xFFFFFFFF);
 
         int currentY = startY + headerHeight;
 
@@ -91,13 +95,15 @@ public class HUDInfo {
                 foundCount = String.valueOf(positions.size());
             }
 
-            context.item(config.stack, startX + 4, currentY + 4);
-            context.text(client.font, name, startX + 24, currentY + (itemHeight - 8) / 2, white);
+            context.renderItem(config.stack, startX + 4, currentY + 4);
+            context.drawString(client.font, name, startX + 24, currentY + (itemHeight - 8) / 2, white);
 
             int countWidth = client.font.width(foundCount);
-            context.text(client.font, foundCount, startX + boxWidth - countWidth - 6, currentY + (itemHeight - 8) / 2, white);
+            context.drawString(client.font, foundCount, startX + boxWidth - countWidth - 6, currentY + (itemHeight - 8) / 2, white);
 
             currentY += itemHeight;
         }
+
+        context.pose().popPose();
     }
 }

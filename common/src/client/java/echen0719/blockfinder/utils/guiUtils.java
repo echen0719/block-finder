@@ -5,12 +5,13 @@ import net.minecraft.client.gui.components.Checkbox;
 import net.minecraft.client.gui.components.Checkbox.Builder;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.network.chat.Component;
 
 public class guiUtils {
     public static EditBox createInputBox(Screen screen, int x, int y, int width, int height, String hint) {
-        EditBox box = new EditBox(screen.getFont(), x, y, width, height, Component.literal(""));
+        EditBox box = new EditBox(Minecraft.getInstance().font, x, y, width, height, Component.literal(""));
         box.setHint(Component.literal(hint));
         return box;
     }
@@ -21,7 +22,7 @@ public class guiUtils {
     }
 
     public static Checkbox createCheckbox(Screen screen, String label, int x, int y, boolean value, Checkbox.OnValueChange onValueChange) {
-        Builder build = Checkbox.builder(Component.literal(label), screen.getFont()).pos(x, y);
+        Builder build = Checkbox.builder(Component.literal(label), Minecraft.getInstance().font).pos(x, y);
         Checkbox checkbox = build.selected(value).onValueChange(onValueChange).build();
         return checkbox;
     }

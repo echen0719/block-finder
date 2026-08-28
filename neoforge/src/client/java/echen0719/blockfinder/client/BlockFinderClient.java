@@ -3,7 +3,7 @@ package echen0719.blockfinder.client;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.block.Block;
 
 import com.mojang.blaze3d.platform.InputConstants;
@@ -24,7 +24,7 @@ import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent; // HUD
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
-import net.neoforged.neoforge.event.level.block.BreakBlockEvent;
+import net.neoforged.neoforge.event.level.BlockEvent.BreakEvent;
 
 import echen0719.blockfinder.screens.HUDInfo;
 import echen0719.blockfinder.screens.menuScreen;
@@ -39,9 +39,7 @@ public class BlockFinderClient {
 	public static menuScreen mainScreen;
 	public static boolean hudRegistered = false;
 
-	private static final KeyMapping.Category category = KeyMapping.Category.register(
-		Identifier.fromNamespaceAndPath("blockfinder", "menu")
-	);
+	private static final String category = "key.categories.blockfinder";
 	public static KeyMapping scanKey = new KeyMapping(
 		"key.blockfinder.scan", 
 		InputConstants.Type.KEYSYM, 
@@ -76,7 +74,7 @@ public class BlockFinderClient {
 
 		while (scanKey.consumeClick()) {
 			mainScreen = new menuScreen();
-			client.setScreenAndShow(mainScreen);
+			client.setScreen(mainScreen);
 		}
 
 		if (BlockScanner.autoRescan && BlockScanner.autoRescanReady && client.player != null &&
@@ -106,7 +104,7 @@ public class BlockFinderClient {
 	}
 
 	@SubscribeEvent
-	public void playerBlockBreak(BreakBlockEvent event) {
+	public void playerBlockBreak(BreakEvent event) {
 		// remove block from positions if it is broken
 		BlockPos position = event.getPos();
 		Block brokenBlock = event.getState().getBlock();
@@ -119,38 +117,40 @@ public class BlockFinderClient {
 	}
 
 	@SubscribeEvent
-	public void renderLevel(RenderLevelStageEvent.AfterTranslucentBlocks event) { // runs every frame
-		Minecraft client = Minecraft.getInstance();
+	public void renderLevel(RenderLevelStageEvent event) { // runs every frame
+		if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) {
+			Minecraft client = Minecraft.getInstance();
 
-		if (BlockScanner.foundBlocks != null) {
-			int renderDistance = client.options.getEffectiveRenderDistance();
+			if (BlockScanner.foundBlocks != null) {
+				int renderDistance = client.options.getEffectiveRenderDistance();
 
-			BlockPos playerPos = client.player.blockPosition();
-			int playerChunkX = playerPos.getX() >> 4;
-			int playerChunkZ = playerPos.getZ() >> 4;
+				BlockPos playerPos = client.player.blockPosition();
+				int playerChunkX = playerPos.getX() >> 4;
+				int playerChunkZ = playerPos.getZ() >> 4;
 
-			for (blockConfig config : menuScreen.getActivePool()) {
-				List<BlockPos> positions = BlockScanner.foundBlocks.get(config.block);
-				if (positions == null) continue;
+				for (blockConfig config : menuScreen.getActivePool()) {
+					List<BlockPos> positions = BlockScanner.foundBlocks.get(config.block);
+					if (positions == null) continue;
 
-				List<BlockPos> visiblePositions = new ArrayList<>();
-				synchronized (positions) {
-					for (BlockPos position : positions) {
-						int blockChunkX = position.getX() >> 4;
-						int blockChunkZ = position.getZ() >> 4;
+					List<BlockPos> visiblePositions = new ArrayList<>();
+					synchronized (positions) {
+						for (BlockPos position : positions) {
+							int blockChunkX = position.getX() >> 4;
+							int blockChunkZ = position.getZ() >> 4;
 
-						if (Math.abs(blockChunkX - playerChunkX) <= renderDistance && 
-						Math.abs(blockChunkZ - playerChunkZ) <= renderDistance) { // absolute peakness
-							visiblePositions.add(position);
+							if (Math.abs(blockChunkX - playerChunkX) <= renderDistance && 
+							Math.abs(blockChunkZ - playerChunkZ) <= renderDistance) { // absolute peakness
+								visiblePositions.add(position);
+							}
 						}
-					}
-				} // prevents ConcurrentModificationException
+					} // prevents ConcurrentModificationException
 
-				if (!visiblePositions.isEmpty()) {
-					BlockDrawer.drawOutline(event.getPoseStack(), visiblePositions, config.color);
+					if (!visiblePositions.isEmpty()) {
+						BlockDrawer.drawOutline(event.getPoseStack(), visiblePositions, config.color);
 
-					if (config.drawTracer) {
-						BlockDrawer.drawTracerLines(event.getPoseStack(), visiblePositions, config.color);
+						if (config.drawTracer) {
+							BlockDrawer.drawTracerLines(event.getPoseStack(), visiblePositions, config.color);
+						}
 					}
 				}
 			}
@@ -159,7 +159,7 @@ public class BlockFinderClient {
 
 	public static void showHUD(RegisterGuiLayersEvent event) {
 		if (!hudRegistered) {
-			event.registerAboveAll(Identifier.fromNamespaceAndPath(MOD_ID, "hud_info"), (graphics, deltaTracker) -> {
+			event.registerAboveAll(ResourceLocation.fromNamespaceAndPath(MOD_ID, "hud_info"), (graphics, deltaTracker) -> {
             	HUDInfo.render(graphics, menuScreen.getActivePool());
         	});
 

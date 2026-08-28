@@ -3,7 +3,7 @@ package echen0719.blockfinder.screens;
 import echen0719.blockfinder.utils.guiUtils;
 import echen0719.blockfinder.utils.guiUtils.Slider;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.screens.Screen;
@@ -36,7 +36,7 @@ public class colorPicker extends Screen {
     private int sliderX;
     private int boxX;
 
-    private GuiGraphicsExtractor context;
+    private GuiGraphics context;
     private Minecraft client = Minecraft.getInstance();
 
     public colorPicker(Screen parent, Object[] color) {
@@ -163,14 +163,14 @@ public class colorPicker extends Screen {
         Button doneButton = guiUtils.createButton(this, "Done", centerX - 50, centerY + 90, 100, 20,
         button -> {
             setColor();
-            Minecraft.getInstance().setScreenAndShow(parent);
+            Minecraft.getInstance().setScreen(parent);
         });
         this.addRenderableWidget(doneButton);
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
-        super.extractRenderState(context, mouseX, mouseY, delta);
+    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
+        super.render(context, mouseX, mouseY, delta);
 
         if (color != null && color[0] != null && color[1] != null && color[2] != null && color[3] != null) {
             int r = ((Number) color[0]).intValue();
@@ -185,9 +185,9 @@ public class colorPicker extends Screen {
             context.fill(previewX, previewY, previewX + 50, previewY + 50, previewColor);
         }
 
-        context.text(client.font, "Red:", labelX, centerY - 45, white);
-        context.text(client.font, "Green:", labelX, centerY - 15, white);
-        context.text(client.font, "Blue:", labelX, centerY + 15, white);
-        context.text(client.font, "Alpha:", labelX, centerY + 45, white);
+        context.drawString(client.font, "Red:", labelX, centerY - 45, white);
+        context.drawString(client.font, "Green:", labelX, centerY - 15, white);
+        context.drawString(client.font, "Blue:", labelX, centerY + 15, white);
+        context.drawString(client.font, "Alpha:", labelX, centerY + 45, white);
     }
 }

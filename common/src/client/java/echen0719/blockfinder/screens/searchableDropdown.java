@@ -5,7 +5,7 @@ import net.minecraft.world.level.block.Block;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractWidget;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
@@ -54,7 +54,7 @@ public class searchableDropdown extends AbstractWidget {
     private List<Block> allBlocks = new ArrayList<Block>();
     private List<Block> filteredBlocks = new ArrayList<Block>();
 
-    private GuiGraphicsExtractor context;
+    private GuiGraphics context;
     private Minecraft client = Minecraft.getInstance();
 
     public searchableDropdown(Screen parent, int x, int y, int width, int height, String message) {
@@ -68,7 +68,7 @@ public class searchableDropdown extends AbstractWidget {
         this.filteredBlocks = new ArrayList<>(this.allBlocks);
     }
 
-    public void setContext(GuiGraphicsExtractor context) {
+    public void setContext(GuiGraphics context) {
         this.context = context;
     }
 
@@ -180,9 +180,9 @@ public class searchableDropdown extends AbstractWidget {
             int iconY = itemY + 2;
 
             ItemStack stack = new ItemStack(block);
-            context.item(stack, iconX, iconY); // seems to draw icon
+            context.renderItem(stack, iconX, iconY); // seems to draw icon
 
-            context.text(client.font, inGameName, tableX + 25, itemY + (itemHeight - 8) / 2, white);
+            context.drawString(client.font, inGameName, tableX + 25, itemY + (itemHeight - 8) / 2, white);
         }
     }
 
@@ -324,7 +324,7 @@ public class searchableDropdown extends AbstractWidget {
     }
 
     @Override
-    protected void extractWidgetRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
+    protected void renderWidget(GuiGraphics context, int mouseX, int mouseY, float delta) {
         context.fill(this.getX(), this.getY(), this.getX() + this.getWidth(), this.getY() + this.getHeight(), darkGray);
 
         String displayedText = ""; // for dropdown text
@@ -335,8 +335,8 @@ public class searchableDropdown extends AbstractWidget {
             displayedText = this.getMessage().getString();
         }
         
-        context.text(client.font, displayedText, this.getX() + 5, this.getY() + (this.getHeight() - 8) / 2, white);
-        context.text(client.font, isDropdownOpen ? "▲" : "▼", this.getX() + this.getWidth() - 15, this.getY() + (this.getHeight() - 8) / 2, white);
+        context.drawString(client.font, displayedText, this.getX() + 5, this.getY() + (this.getHeight() - 8) / 2, white);
+        context.drawString(client.font, isDropdownOpen ? "▲" : "▼", this.getX() + this.getWidth() - 15, this.getY() + (this.getHeight() - 8) / 2, white);
 
         if (!isDropdownOpen || filteredBlocks.isEmpty()) {
             return;

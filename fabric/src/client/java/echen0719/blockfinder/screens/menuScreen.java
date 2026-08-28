@@ -16,9 +16,8 @@ import org.lwjgl.system.MemoryStack;
 import org.lwjgl.util.tinyfd.TinyFileDialogs;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.EditBox;
@@ -26,7 +25,7 @@ import net.minecraft.client.gui.components.Checkbox; // HOW DID I NOT KNOW THIS 
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceLocation;
 
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents;
@@ -267,7 +266,7 @@ public class menuScreen extends Screen {
 
                 if (!configJson.has("block")) continue;
                 String blockID = configJson.get("block").getAsString();
-                Block block = BuiltInRegistries.BLOCK.getValue(Identifier.parse(blockID));
+                Block block = BuiltInRegistries.BLOCK.get(ResourceLocation.parse(blockID));
                 blockConfig config = new blockConfig(block);
 
                 // using conditional to save some lines
@@ -335,29 +334,26 @@ public class menuScreen extends Screen {
     }
 
     @Override
-    public boolean mouseClicked(MouseButtonEvent event, boolean isDoubleClick) {
-        if (event.button() == 0) {
-            double x = event.x();
-            double y = event.y();
-
+    public boolean mouseClicked(double mouseX, double mouseY, int button) {
+        if (button == 0) {
             if (selectedConfig != null) {
                 int panelWidth = 260;
                 int panelHeight = 110;
                 int panelX = (this.width - panelWidth) / 2;
                 int panelY = 90;
-                boolean insideSubmenu = x >= panelX && x <= panelX + panelWidth && y >= panelY && y <= panelY + panelHeight;
+                boolean insideSubmenu = mouseX >= panelX && mouseX <= panelX + panelWidth && mouseY >= panelY && mouseY <= panelY + panelHeight;
                 
                 if (!insideSubmenu) {
                     selectedConfig = null;
                     return true;
                 }
                 
-                if (super.mouseClicked(event, isDoubleClick)) {
+                if (super.mouseClicked(mouseX, mouseY, button)) {
                     return true; // to fix some random ahh bug
                 }
             }
 
-            if (blockDropdown.onItemClick(x, y)) {
+            if (blockDropdown.onItemClick(mouseX, mouseY)) {
                 return true;
             }
 
@@ -386,12 +382,12 @@ public class menuScreen extends Screen {
 
                 if (currentY + itemHeight > this.height - 40) break;
 
-                if (x >= currentX && x <= currentX + itemWidth && y >= currentY && y <= currentY + itemHeight) {
+                if (mouseX >= currentX && mouseX <= currentX + itemWidth && mouseY >= currentY && mouseY <= currentY + itemHeight) {
                     int colorX = currentX + 24 + textWidth + 6;
                     int closeX = colorX + 18;
 
                     // slight bigger than close 'x' itself
-                    if (x >= closeX - 2 && x <= closeX + closeWidth + 2) {
+                    if (mouseX >= closeX - 2 && mouseX <= closeX + closeWidth + 2) {
                         activePool.remove(i);
                         if (selectedConfig == config) {
                             selectedConfig = null;
@@ -402,8 +398,8 @@ public class menuScreen extends Screen {
                         return true;
                     }
 
-                    if (x >= colorX && x <= colorX + 12 && y >= currentY + 4 && y <= currentY + 16) {
-                        Minecraft.getInstance().setScreenAndShow(new colorPicker(this, config.color));
+                    if (mouseX >= colorX && mouseX <= colorX + 12 && mouseY >= currentY + 4 && mouseY <= currentY + 16) {
+                        Minecraft.getInstance().setScreen(new colorPicker(this, config.color));
                         return true;
                     }
 
@@ -430,18 +426,18 @@ public class menuScreen extends Screen {
                 currentX += itemWidth + horizontalPadding;
             }
         }
-        return super.mouseClicked(event, isDoubleClick);
+        return super.mouseClicked(mouseX, mouseY, button);
     }
     
     @Override
-    public boolean mouseReleased(MouseButtonEvent event) {
-        if (event.button() == 0) {
+    public boolean mouseReleased(double mouseX, double mouseY, int button) {
+        if (button == 0) {
             blockDropdown.handleMouseRelease();
         }
-        return super.mouseReleased(event);
+        return super.mouseReleased(mouseX, mouseY, button);
     }
 
-    private void renderActivePool(GuiGraphicsExtractor context, int mouseX, int mouseY) {
+    private void renderActivePool(GuiGraphics context, int mouseX, int mouseY) {
         int startX = 10;
         int startY = 60;
         int itemHeight = 24;
@@ -452,7 +448,7 @@ public class menuScreen extends Screen {
         int currentY = startY;
         int maxWidth = this.width - 10;
 
-        context.text(this.font, Component.literal("Active Finders:"), startX, startY, white);
+        context.drawString(this.font, Component.literal("Active Finders:"), startX, startY, white);
         currentY += 20;
 
         for (int i = 0; i < activePool.size(); i++) {
@@ -477,20 +473,20 @@ public class menuScreen extends Screen {
 
             context.fill(currentX, currentY, currentX + itemWidth, currentY + itemHeight, backgroundColor);
 
-            context.item(new ItemStack(config.block), currentX + 4, currentY + 4);
-            context.text(this.font, name, currentX + 24, currentY + (itemHeight - 8) / 2, white);
+            context.renderItem(new ItemStack(config.block), currentX + 4, currentY + 4);
+            context.drawString(this.font, name, currentX + 24, currentY + (itemHeight - 8) / 2, white);
 
             int colorX = currentX + 24 + textWidth + 6; // auto calc based on length of name
             context.fill(colorX, currentY + 6, colorX + 12, currentY + 18, colorUtils.arrayToInt(config.color));
 
             int closeX = colorX + 18;
-            context.text(this.font, "x", closeX, currentY + (itemHeight - 8) / 2, 0xFFFF5555);
+            context.drawString(this.font, "x", closeX, currentY + (itemHeight - 8) / 2, 0xFFFF5555);
 
             currentX += itemWidth + horizontalPadding;
         }
     }
 
-    private void renderSubmenuBackground(GuiGraphicsExtractor context) {
+    private void renderSubmenuBackground(GuiGraphics context) {
         int panelWidth = 260;
         int panelHeight = 100;
         int panelX = (this.width - panelWidth) / 2;
@@ -501,15 +497,15 @@ public class menuScreen extends Screen {
         context.fill(panelX, panelY, panelX + panelWidth, panelY + panelHeight, darkTranslucentGray);
     }
 
-    private void renderSubmenu(GuiGraphicsExtractor context) {
+    private void renderSubmenu(GuiGraphics context) {
         if (selectedConfig != null) {
             radiusSizeBox.setX(this.width / 2 - 120); radiusSizeBox.setY(125);
             minYBox.setX(this.width / 2 + 20); minYBox.setY(125);
             maxYBox.setX(this.width / 2 + 70); maxYBox.setY(125);
 
-            context.centeredText(this.font, Component.literal("Editing: " + selectedConfig.block.getName().getString()), this.width / 2, 210, 0xFFFFFF55);
-            context.centeredText(this.font, Component.literal("Radius:"), this.width / 2 - 60, 110, white);
-            context.centeredText(this.font, Component.literal("Min Y  /  Max Y:"), this.width / 2 + 65, 110, white);
+            context.drawCenteredString(this.font, Component.literal("Editing: " + selectedConfig.block.getName().getString()), this.width / 2, 210, 0xFFFFFF55);
+            context.drawCenteredString(this.font, Component.literal("Radius:"), this.width / 2 - 60, 110, white);
+            context.drawCenteredString(this.font, Component.literal("Min Y  /  Max Y:"), this.width / 2 + 65, 110, white);
 
             drawLinesCheckbox.setX(this.width / 2 - 60);
             drawLinesCheckbox.setY(160);
@@ -540,10 +536,17 @@ public class menuScreen extends Screen {
     }
 
     @Override
-    public void extractRenderState(GuiGraphicsExtractor context, int mouseX, int mouseY, float delta) {
-        context.centeredText(this.font, Component.literal("Block Finder"), this.width / 2, 10, white);
+    public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
+        // head hurts from background convering up GuiGraphics render components
+        // found this solution where you remove .super()'s auto blur background
+        // and call it first and then flush it and start new
+        renderBackground(context, mouseX, mouseY, delta);
+        context.flush(); 
+
+        context.drawCenteredString(this.font, Component.literal("Block Finder"), this.width / 2, 10, white);
 
         renderActivePool(context, mouseX, mouseY);
+        context.flush();
 
         blockDropdown.setContext(context);
         Block dropdownBlock = blockDropdown.getSelectedBlock();
@@ -556,10 +559,6 @@ public class menuScreen extends Screen {
         }
 
         boolean usingSubmenu = selectedConfig != null;
-
-        if (usingSubmenu) {
-            renderSubmenuBackground(context);
-        }
 
         radiusSizeBox.setVisible(usingSubmenu); // seen in submenu
         minYBox.setVisible(usingSubmenu);
@@ -577,14 +576,86 @@ public class menuScreen extends Screen {
             clearButton.visible = !usingSubmenu;
         }
 
-        renderSubmenu(context);
+        if (usingSubmenu) {
+            context.pose().pushPose();
+            context.pose().translate(0, 0, 300); // moves submenu background higher on z-axis
 
+            renderSubmenuBackground(context);
+
+            context.pose().popPose();
+            context.flush();
+
+            context.pose().pushPose();
+            context.pose().translate(0, 0, 400);
+
+            renderSubmenu(context);
+
+            context.pose().popPose();
+            context.flush();
+
+            // not calling super.render() so I have to manually add these
+            context.pose().pushPose();
+            context.pose().translate(0, 0, 500);
+
+            radiusSizeBox.render(context, mouseX, mouseY, delta);
+            minYBox.render(context, mouseX, mouseY, delta);
+            maxYBox.render(context, mouseX, mouseY, delta);
+            drawLinesCheckbox.render(context, mouseX, mouseY, delta);
+
+            context.pose().popPose();
+            context.flush();
+        }
+
+        context.pose().pushPose();
+        context.pose().translate(0, 0, 500);
+
+        if (submitButton != null) {
+            submitButton.render(context, mouseX, mouseY, delta);
+        }
+        if (clearButton != null) {
+            clearButton.render(context, mouseX, mouseY, delta);
+        }
+
+        if (autoRescanCheckbox != null) {
+            autoRescanCheckbox.render(context, mouseX, mouseY, delta);
+        }
+        if (showHUDCheckbox != null) {
+            showHUDCheckbox.render(context, mouseX, mouseY, delta);
+        }
+        if (loadButton != null) {
+            loadButton.render(context, mouseX, mouseY, delta);
+        }
+        if (saveButton != null) {
+            saveButton.render(context, mouseX, mouseY, delta);
+        }
+
+        context.pose().popPose();
+        context.flush();
+
+        // dropdown should probably be absolute highest z-index
         if (blockDropdown != null) {
-            blockDropdown.extractWidgetRenderState(context, mouseX, mouseY, delta);
+            context.pose().pushPose();
+            context.pose().translate(0, 0, 600);
+
+            blockDropdown.render(context, mouseX, mouseY, delta);
+
+            context.pose().popPose();
+            context.flush();
+        }
+
+        if (blockDropdown.getSearchBox() != null) {
+            context.pose().pushPose();
+            context.pose().translate(0, 0, 700);
+
+            // fix search box not showing flashing cursor
+            blockDropdown.getSearchBox().render(context, mouseX, mouseY, delta);
+
+            context.pose().popPose();
+            context.flush();
         }
 
         blockDropdown.handleMouseDrag(mouseY);
 
-        super.extractRenderState(context, mouseX, mouseY, delta);
+        // super.render(context, mouseX, mouseY, delta);
     }
 }
