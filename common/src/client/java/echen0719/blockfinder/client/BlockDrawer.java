@@ -213,6 +213,9 @@ public class BlockDrawer {
         int tracerIndexCount = tracerIndexCountCache.get(colorKey);
 
         Vec3 cameraPosition = client.gameRenderer.mainCamera().position();
+        Vec3 cameraAngles = client.player.getLookAngle(); // look angle is for camera, head angle is for 3D stuff
+        Vec3 startPosition = cameraPosition.add(cameraAngles.scale(0.25)); // slightly in front
+
         Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
 
         var colorTextureView = client.gameRenderer.mainRenderTarget().getColorTextureView();
@@ -227,15 +230,20 @@ public class BlockDrawer {
             renderPass.setPipeline(seeThroughLines);
             
             for (BlockPos position : positions) {
-                float dx = (float)(position.getX() + 0.5 - cameraPosition.x);
-                float dy = (float)(position.getY() + 0.5 - cameraPosition.y);
-                float dz = (float)(position.getZ() + 0.5 - cameraPosition.z);
+                Vec3 targetPosition = Vec3.atCenterOf(position); // get center of block
+
+                float dx = (float)(targetPosition.x - startPosition.x);
+                float dy = (float)(targetPosition.y - startPosition.y);
+                float dz = (float)(targetPosition.z - startPosition.z);
 
                 modelViewStack.pushMatrix();
 
-                // create unit line and stretch it to camera
-                modelViewStack.translate(0.0f, -0.5f, 0.0f); // 1.8 meters player
-                modelViewStack.scale(dx, dy + 0.5f, dz); 
+                modelViewStack.translate(
+                    (float)(startPosition.x - cameraPosition.x),
+                    (float)(startPosition.y - cameraPosition.y),
+                    (float)(startPosition.z - cameraPosition.z)
+                );
+                modelViewStack.scale(dx, dy, dz); // create unit line and stretch it to camera
 
                 Matrix4f matrix = new Matrix4f(modelViewStack);
                 modelViewStack.popMatrix();
