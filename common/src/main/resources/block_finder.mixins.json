@@ -1,0 +1,12 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "echen0719.blockfinder.client.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "BlockUpdaterMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
