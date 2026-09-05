@@ -222,7 +222,7 @@ public class BlockDrawer {
         var depthTextureView = client.gameRenderer.mainRenderTarget().getDepthTextureView();
         
         try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> 
-        "blockfinder_outline", colorTextureView, Optional.empty(), depthTextureView, OptionalDouble.empty())) { 
+        "blockfinder_tracers", colorTextureView, Optional.empty(), depthTextureView, OptionalDouble.empty())) { 
             RenderSystem.bindDefaultUniforms(renderPass);
             
             renderPass.setVertexBuffer(0, tracerVertexBuffer.slice());
