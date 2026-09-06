@@ -153,14 +153,23 @@ public class BlockDrawer {
         float a = (Float) color[3];
         
         Vec3 cameraPosition = client.gameRenderer.getMainCamera().getPosition();
+        Vec3 cameraAngles = client.player.getLookAngle(); // look angle is for camera, head angle is for 3D stuff
+        Vec3 startPosition = cameraPosition.add(cameraAngles.scale(0.25)); // slightly in front
+
         BufferBuilder builder = initBuilder();
 
         for (BlockPos position : positions) {
-            float x = (float) (position.getX() + 0.5 - cameraPosition.x);
-            float y = (float) (position.getY() + 0.5 - cameraPosition.y);
-            float z = (float) (position.getZ() + 0.5 - cameraPosition.z);
+            Vec3 targetPosition = Vec3.atCenterOf(position); // get center of block
 
-            drawEdge(builder, 0.0f, 0.0f, 0.0f, x, y, z, r, g, b, a);
+            float dx = (float)(targetPosition.x - startPosition.x);
+            float dy = (float)(targetPosition.y - startPosition.y);
+            float dz = (float)(targetPosition.z - startPosition.z);
+
+            float startX = (float) (startPosition.x - cameraPosition.x);
+            float startY = (float) (startPosition.y - cameraPosition.y);
+            float startZ = (float) (startPosition.z - cameraPosition.z);
+
+            drawEdge(builder, startX, startY, startZ, dx, dy, dz, r, g, b, a);
         }
 
         MeshData mesh = builder.buildOrThrow();

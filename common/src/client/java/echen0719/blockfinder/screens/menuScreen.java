@@ -27,12 +27,9 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.resources.ResourceLocation;
 
-import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.fabric.api.client.screen.v1.ScreenMouseEvents;
-
 import echen0719.blockfinder.client.BlockDrawer;
 import echen0719.blockfinder.client.BlockScanner;
-import echen0719.blockfinder.client.BlockFinderClient;
+import echen0719.blockfinder.client.ClientHooks;
 import echen0719.blockfinder.screens.searchableDropdown;
 import echen0719.blockfinder.utils.guiUtils;
 import echen0719.blockfinder.utils.colorUtils;
@@ -149,7 +146,7 @@ public class menuScreen extends Screen {
             HUDInfo.errorMessage = "Fill in/Check the values for " + missingString + " and resubmit.";
             
             onClose();
-            BlockFinderClient.showHUD();
+            ClientHooks.showHUD();
             return true; // had error
         }
         return false; // no error
@@ -178,7 +175,7 @@ public class menuScreen extends Screen {
             }
 
             onClose();
-            BlockFinderClient.showHUD();
+            ClientHooks.showHUD();
         });
 
         clearButton = guiUtils.createButton(this, "Clear All", this.width / 2 + 10, this.height - 40, 100, 20, button -> {
@@ -196,7 +193,7 @@ public class menuScreen extends Screen {
                 filters.put(stack.UTF8("*.json"));
                 filters.flip();
                 
-                File gameDir = FabricLoader.getInstance().getGameDirectory();
+                File gameDir = Minecraft.getInstance().gameDirectory;
                 File folder = new File(gameDir, "blockfinder");
                 if (!folder.exists()) {
                     folder.mkdirs(); // Ensure the directory exists before opening the dialog
@@ -222,7 +219,7 @@ public class menuScreen extends Screen {
                 filters.put(stack.UTF8("*.json"));
                 filters.flip();
                 
-                File gameDir = FabricLoader.getInstance().getGameDirectory();
+                File gameDir = Minecraft.getInstance().gameDirectory;
                 File folder = new File(gameDir, "blockfinder");
 
                 String selectedPath = TinyFileDialogs.tinyfd_saveFileDialog(

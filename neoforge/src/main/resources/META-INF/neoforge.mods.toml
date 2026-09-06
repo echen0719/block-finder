@@ -34,3 +34,6 @@ description="Find blocks in a singleplayer or multiplayer world"
     versionRange="[1.21.1]"
     ordering="NONE"
     side="BOTH"
+
+[[mixins]]
+config="block_finder.mixins.json"
