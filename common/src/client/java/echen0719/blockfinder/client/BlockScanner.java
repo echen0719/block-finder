@@ -66,7 +66,8 @@ public class BlockScanner {
                 int radius;
                 try {
                     radius = Integer.parseInt(config.radius.trim());
-                } catch (NumberFormatException e) {
+                } 
+                catch (NumberFormatException e) {
                     continue;
                 }
 
