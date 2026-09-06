@@ -61,7 +61,7 @@ public class BlockDrawer {
     }
 
     private static BufferBuilder initBuilder() {
-        return Tesselator.getInstance().begin(VertexFormat.Mode.DEBUG_LINES, DefaultVertexFormat.POSITION_COLOR);
+        return Tesselator.getInstance().begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL);
     }
 
     public static void drawOutline(PoseStack matrices, List<BlockPos> positions, Object[] color) {
@@ -120,13 +120,13 @@ public class BlockDrawer {
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(false); 
 
-        RenderSystem.lineWidth(2.0f);
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        RenderSystem.lineWidth(3.0f);
+        RenderSystem.setShader(GameRenderer::getRendertypeLinesShader);
 
         vertexBuffer.drawWithShader(
             RenderSystem.getModelViewMatrix(),
             RenderSystem.getProjectionMatrix(),
-            GameRenderer.getPositionColorShader() 
+            GameRenderer.getRendertypeLinesShader() 
         );
         VertexBuffer.unbind();
 
@@ -183,13 +183,13 @@ public class BlockDrawer {
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(false);
 
-        RenderSystem.lineWidth(2.0f);
-        RenderSystem.setShader(GameRenderer::getPositionColorShader);
+        RenderSystem.lineWidth(3.0f);
+        RenderSystem.setShader(GameRenderer::getRendertypeLinesShader);
 
         vertexBuffer.drawWithShader(
             RenderSystem.getModelViewMatrix(),
             RenderSystem.getProjectionMatrix(),
-            GameRenderer.getPositionColorShader() 
+            GameRenderer.getRendertypeLinesShader() 
         );
         VertexBuffer.unbind();
 
@@ -205,7 +205,7 @@ public class BlockDrawer {
     float x1, float y1, float z1, float x2, float y2, float z2,
     float r, float g, float b, float a) {
         // start & end
-        buffer.addVertex(x1, y1, z1).setColor(r, g, b, a);
-        buffer.addVertex(x2, y2, z2).setColor(r, g, b, a);
+        buffer.addVertex(x1, y1, z1).setColor(r, g, b, a).setNormal(1, 1, 1);
+        buffer.addVertex(x2, y2, z2).setColor(r, g, b, a).setNormal(1, 1, 1);
     }
 }
