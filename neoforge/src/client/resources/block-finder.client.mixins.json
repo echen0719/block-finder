@@ -1,8 +1,9 @@
 {
 	"required": true,
 	"package": "echen0719.blockfinder.client.mixin",
-	"compatibilityLevel": "JAVA_25",
+	"compatibilityLevel": "JAVA_21",
 	"client": [
+		"BlockUpdaterMixin",
 		"ExampleClientMixin"
 	],
 	"injectors": {

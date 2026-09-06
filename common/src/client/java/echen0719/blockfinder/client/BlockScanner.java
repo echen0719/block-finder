@@ -7,6 +7,9 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 
+import echen0719.blockfinder.screens.blockConfig;
+import echen0719.blockfinder.screens.menuScreen;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -42,6 +45,51 @@ public class BlockScanner {
 
     // concurrent map for scans
     private static final java.util.Set<Block> activeScans = java.util.concurrent.ConcurrentHashMap.newKeySet();
+
+    public static void onBlockUpdate(BlockPos position, BlockState newState) {
+        if (newState == null) return;
+        Block newBlock = newState.getBlock();
+
+        // if new state of block is true, remove that
+        for (blockConfig config : menuScreen.getActivePool()) {
+            if (config == null || config.block == null) continue;
+            List<BlockPos> positions = BlockScanner.foundBlocks.get(config.block);
+            if (positions != null) {
+                positions.remove(position);
+            }
+        }
+
+        // and then add the new state
+        for (blockConfig config : menuScreen.getActivePool()) {
+            if (config == null || config.block == null) continue;
+            if (newBlock == config.block) {
+                int radius;
+                try {
+                    radius = Integer.parseInt(config.radius.trim());
+                } catch (NumberFormatException e) {
+                    continue;
+                }
+
+                // this is to fix the issue of blocks being updated outside of the radius
+                BlockPos scanCenter = BlockScanner.lastPlayerCenter;
+                if (scanCenter == null ||
+                Math.abs(position.getX() - scanCenter.getX()) > radius ||
+                Math.abs(position.getZ() - scanCenter.getZ()) > radius) {
+                    continue;
+                }
+
+                List<BlockPos> positions = BlockScanner.foundBlocks.get(newBlock);
+                if (positions == null) continue;
+                
+                synchronized (positions) {
+                    if (!positions.contains(position)) {
+                        positions.add(position);
+                    }
+                }
+                break;
+            }
+        }
+    }
 
     public static void scan(int blockRadius, Block targetBlock, int minY, int maxY) {
         if (client.level == null || client.player == null || activeScans.contains(targetBlock)) {

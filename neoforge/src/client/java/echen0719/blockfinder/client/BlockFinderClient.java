@@ -4,7 +4,6 @@ import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.level.block.Block;
 
 import com.mojang.blaze3d.platform.InputConstants;
 
@@ -18,13 +17,11 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.client.event.ClientTickEvent;
 import net.neoforged.neoforge.client.event.RenderLevelStageEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent; // HUD
 import net.neoforged.neoforge.client.event.RegisterKeyMappingsEvent;
-import net.neoforged.neoforge.event.level.BlockEvent.BreakEvent;
 
 import echen0719.blockfinder.screens.HUDInfo;
 import echen0719.blockfinder.screens.menuScreen;
@@ -50,6 +47,7 @@ public class BlockFinderClient {
 	);
 
 	public BlockFinderClient(IEventBus modEventBus) {
+		ClientHooks.setShowHUD(BlockFinderClient::showHUD);
         modEventBus.addListener(this::onInitializeClient);
 		modEventBus.addListener(this::registerKeys);
 		modEventBus.addListener((RegisterGuiLayersEvent event) -> showHUD(event));
@@ -62,7 +60,7 @@ public class BlockFinderClient {
 	}
 
 	public void onInitializeClient(FMLClientSetupEvent event) {
-		File gameDir = FMLPaths.GAMEDIR.get().toAbsolutePath().toFile();
+		File gameDir = Minecraft.getInstance().gameDirectory;
         File folder = new File(gameDir, "blockfinder");
 
 		if (!folder.exists()) {
@@ -102,19 +100,6 @@ public class BlockFinderClient {
 					}
 				}
 			}
-		}
-	}
-
-	@SubscribeEvent
-	public void playerBlockBreak(BreakEvent event) {
-		// remove block from positions if it is broken
-		BlockPos position = event.getPos();
-		Block brokenBlock = event.getState().getBlock();
-
-		List<BlockPos> positions = BlockScanner.foundBlocks.get(brokenBlock);
-		
-		if (positions != null) {
-			positions.remove(position);
 		}
 	}
 
