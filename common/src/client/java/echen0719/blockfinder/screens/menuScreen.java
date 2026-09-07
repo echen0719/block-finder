@@ -263,7 +263,7 @@ public class menuScreen extends Screen {
 
                 if (!configJson.has("block")) continue;
                 String blockID = configJson.get("block").getAsString();
-                Block block = BuiltInRegistries.BLOCK.get(ResourceLocation.parse(blockID));
+                Block block = BuiltInRegistries.BLOCK.getValue(ResourceLocation.parse(blockID));
                 blockConfig config = new blockConfig(block);
 
                 // using conditional to save some lines

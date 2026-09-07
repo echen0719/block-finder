@@ -10,6 +10,7 @@ import org.joml.Matrix4fStack;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
 
+import com.mojang.blaze3d.buffers.BufferUsage;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
@@ -20,7 +21,7 @@ import com.mojang.blaze3d.vertex.VertexBuffer;
 import com.mojang.blaze3d.vertex.VertexFormat;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.GameRenderer;
+import net.minecraft.client.renderer.CoreShaders; // replace GameRenderer
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.phys.Vec3;
 
@@ -56,8 +57,8 @@ public class BlockDrawer {
         int colorKey = getColor(color);
         if (vertexBufferCache.containsKey(colorKey)) return; // if color is already cached
 
-        vertexBufferCache.put(colorKey, new VertexBuffer(VertexBuffer.Usage.DYNAMIC));
-        tracerVertexBufferCache.put(colorKey, new VertexBuffer(VertexBuffer.Usage.DYNAMIC));
+        vertexBufferCache.put(colorKey, new VertexBuffer(BufferUsage.DYNAMIC_WRITE));
+        tracerVertexBufferCache.put(colorKey, new VertexBuffer(BufferUsage.DYNAMIC_WRITE));
     }
 
     private static BufferBuilder initBuilder() {
@@ -121,12 +122,12 @@ public class BlockDrawer {
         RenderSystem.depthMask(false); 
 
         RenderSystem.lineWidth(3.0f);
-        RenderSystem.setShader(GameRenderer::getRendertypeLinesShader);
+        RenderSystem.setShader(CoreShaders.RENDERTYPE_LINES);
 
         vertexBuffer.drawWithShader(
             RenderSystem.getModelViewMatrix(),
             RenderSystem.getProjectionMatrix(),
-            GameRenderer.getRendertypeLinesShader() 
+            RenderSystem.getShader()
         );
         VertexBuffer.unbind();
 
@@ -184,12 +185,12 @@ public class BlockDrawer {
         RenderSystem.depthMask(false);
 
         RenderSystem.lineWidth(3.0f);
-        RenderSystem.setShader(GameRenderer::getRendertypeLinesShader);
+        RenderSystem.setShader(CoreShaders.RENDERTYPE_LINES);
 
         vertexBuffer.drawWithShader(
             RenderSystem.getModelViewMatrix(),
             RenderSystem.getProjectionMatrix(),
-            GameRenderer.getRendertypeLinesShader() 
+            RenderSystem.getShader()
         );
         VertexBuffer.unbind();
 
