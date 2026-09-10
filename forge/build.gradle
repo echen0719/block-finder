@@ -1,0 +1,98 @@
+plugins {
+    id 'java'
+    id 'net.minecraftforge.gradle'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+
+    withSourcesJar()
+}
+
+sourceSets { // client and main
+    main {
+        java {
+            srcDirs = [
+                'src/main/java',
+                'src/client/java',
+                '../common/src/main/java',
+                '../common/src/client/java'
+            ]
+        }
+
+        resources {
+            srcDirs = [
+                'src/main/resources',
+                'src/client/resources',
+                '../common/src/main/resources',
+                '../common/src/client/resources',
+                'src/generated/resources'
+            ]
+        }
+
+        output.setResourcesDir(file("$buildDir/classes/java/main"))
+    }
+}
+
+repositories {
+    minecraft.mavenizer(it)
+    maven fg.forgeMaven
+    maven fg.minecraftLibsMaven
+    mavenCentral()
+}
+
+minecraft {
+    mappings channel: 'official', version: minecraft_version
+
+    runs {
+        configureEach {
+            workingDir.convention layout.projectDirectory.dir('run')
+
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+            systemProperty 'forge.logging.console.level', 'debug'
+
+            mods {
+                register("block_finder") {
+                    source sourceSets.main
+                }
+            }
+        }
+
+        register('client') {
+            args '--username', 'echen0719'
+        }
+
+        register('server') {
+            args '--nogui'
+        }
+
+        register('data') {
+            args '--mod', 'block_finder',
+                '--all',
+                '--output', file('src/generated/resources/').absolutePath,
+                '--existing', file('src/main/resources/').absolutePath
+        }
+    }
+}
+
+dependencies {
+    implementation minecraft.dependency("net.minecraftforge:forge:${minecraft_version}-${forge_version}")
+}
+
+// HoW doEs tHiS wOrK? It took so long
+// But this seems to have solved the
+// Mod not found error, bruh
+tasks.withType(JavaCompile).configureEach {
+	dependsOn tasks.named('processResources')
+    options.encoding = 'UTF-8'
+    options.release = 21
+}
+
+tasks.named('processResources') {
+    destinationDir = file("$buildDir/classes/java/main")
+}
