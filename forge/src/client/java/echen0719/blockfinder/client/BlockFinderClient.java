@@ -173,6 +173,6 @@ public class BlockFinderClient {
 	}
 
 	public static void showHUD() {
-        HUDInfo.showHUD = true;
+        // HUDInfo.showHUD = true;
     }
 }
