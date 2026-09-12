@@ -1,6 +1,7 @@
 plugins {
     id "net.fabricmc.fabric-loom" version "${loom_version}" apply false
     id "net.neoforged.gradle.userdev" version "7.1.38" apply false
+    id "net.minecraftforge.gradle" version "[7.0.23,8.0)" apply false
 }
 
 subprojects {
