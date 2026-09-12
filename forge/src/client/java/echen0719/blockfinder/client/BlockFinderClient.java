@@ -144,6 +144,6 @@ public class BlockFinderClient {
 	} // not sure why this is called "Chat" but you know...if it works, it works :D
 
 	public static void showHUD() {
-        HUDInfo.showHUD = true;
+        // HUDInfo.showHUD = true;
     }
 }
