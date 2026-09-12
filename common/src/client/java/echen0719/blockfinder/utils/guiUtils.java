@@ -2,7 +2,6 @@ package echen0719.blockfinder.utils;
 
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.components.Checkbox;
-import net.minecraft.client.gui.components.Checkbox.Builder;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.client.gui.components.EditBox;
 import net.minecraft.client.Minecraft;
@@ -10,6 +9,10 @@ import net.minecraft.client.gui.components.AbstractSliderButton;
 import net.minecraft.network.chat.Component;
 
 public class guiUtils {
+    public interface OnValueChange {
+        void accept(Checkbox checkbox, boolean selected);
+    }
+
     public static EditBox createInputBox(Screen screen, int x, int y, int width, int height, String hint) {
         EditBox box = new EditBox(Minecraft.getInstance().font, x, y, width, height, Component.literal(""));
         box.setHint(Component.literal(hint));
@@ -21,10 +24,19 @@ public class guiUtils {
         return button;
     }
 
-    public static Checkbox createCheckbox(Screen screen, String label, int x, int y, boolean value, Checkbox.OnValueChange onValueChange) {
-        Builder build = Checkbox.builder(Component.literal(label), Minecraft.getInstance().font).pos(x, y);
-        Checkbox checkbox = build.selected(value).onValueChange(onValueChange).build();
-        return checkbox;
+    public static Checkbox createCheckbox(Screen screen, String label, int x, int y, boolean value, OnValueChange onValueChange) {
+        Component message = Component.literal(label);
+        int width = Minecraft.getInstance().font.width(message) + 24;
+
+        return new Checkbox(x, y, width, 20, message, value, true) {
+            @Override
+            public void onPress() {
+                super.onPress();
+                if (onValueChange != null) {
+                    onValueChange.accept(this, this.selected());
+                }
+            }
+        };
     }
 
     public static class Slider extends AbstractSliderButton {

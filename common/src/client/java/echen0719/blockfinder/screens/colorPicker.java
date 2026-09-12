@@ -170,6 +170,7 @@ public class colorPicker extends Screen {
 
     @Override
     public void render(GuiGraphics context, int mouseX, int mouseY, float delta) {
+        renderBackground(context);
         super.render(context, mouseX, mouseY, delta);
 
         if (color != null && color[0] != null && color[1] != null && color[2] != null && color[3] != null) {

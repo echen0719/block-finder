@@ -42,10 +42,10 @@ public class BlockFinderClient {
 		category
 	);
 
-	public BlockFinderClient(FMLJavaModLoadingContext context) {
+	public BlockFinderClient() {
 		ClientHooks.setShowHUD(BlockFinderClient::showHUD);
 
-		var modEventBus = context.getModEventBus();
+		var modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
 		modEventBus.addListener(this::onInitializeClient);
 		modEventBus.addListener(this::registerKeys);
 		MinecraftForge.EVENT_BUS.register(this);
@@ -65,7 +65,9 @@ public class BlockFinderClient {
 	}
 
 	@SubscribeEvent
-	public void clientTick(TickEvent.ClientTickEvent.Post event) { // runs every tick or 20x/s
+	public void clientTick(TickEvent.ClientTickEvent event) { // runs every tick or 20x/s
+		if (event.phase != TickEvent.Phase.END) return;
+
 		Minecraft client = Minecraft.getInstance();
 
 		while (scanKey.consumeClick()) {
@@ -101,39 +103,39 @@ public class BlockFinderClient {
 
 	@SubscribeEvent
 	public void renderLevel(RenderLevelStageEvent event) { // runs every frame
-		if (event.getStage() != RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) return;
+		if (event.getStage() == RenderLevelStageEvent.Stage.AFTER_TRANSLUCENT_BLOCKS) {
+			Minecraft client = Minecraft.getInstance();
 
-		Minecraft client = Minecraft.getInstance();
+			if (client.player != null && BlockScanner.foundBlocks != null) {
+				int renderDistance = client.options.getEffectiveRenderDistance();
 
-		if (client.player != null && BlockScanner.foundBlocks != null) {
-			int renderDistance = client.options.getEffectiveRenderDistance();
+				BlockPos playerPos = client.player.blockPosition();
+				int playerChunkX = playerPos.getX() >> 4;
+				int playerChunkZ = playerPos.getZ() >> 4;
 
-			BlockPos playerPos = client.player.blockPosition();
-			int playerChunkX = playerPos.getX() >> 4;
-			int playerChunkZ = playerPos.getZ() >> 4;
+				for (blockConfig config : menuScreen.getActivePool()) {
+					List<BlockPos> positions = BlockScanner.foundBlocks.get(config.block);
+					if (positions == null) continue;
 
-			for (blockConfig config : menuScreen.getActivePool()) {
-				List<BlockPos> positions = BlockScanner.foundBlocks.get(config.block);
-				if (positions == null) continue;
+					List<BlockPos> visiblePositions = new ArrayList<>();
+					synchronized (positions) {
+						for (BlockPos position : positions) {
+							int blockChunkX = position.getX() >> 4;
+							int blockChunkZ = position.getZ() >> 4;
 
-				List<BlockPos> visiblePositions = new ArrayList<>();
-				synchronized (positions) {
-					for (BlockPos position : positions) {
-						int blockChunkX = position.getX() >> 4;
-						int blockChunkZ = position.getZ() >> 4;
-
-						if (Math.abs(blockChunkX - playerChunkX) <= renderDistance && 
-						Math.abs(blockChunkZ - playerChunkZ) <= renderDistance) { // absolute peakness
-							visiblePositions.add(position);
+							if (Math.abs(blockChunkX - playerChunkX) <= renderDistance && 
+							Math.abs(blockChunkZ - playerChunkZ) <= renderDistance) { // absolute peakness
+								visiblePositions.add(position);
+							}
 						}
-					}
-				} // prevents ConcurrentModificationException
+					} // prevents ConcurrentModificationException
 
-				if (!visiblePositions.isEmpty()) {
-					BlockDrawer.drawOutline(null, visiblePositions, config.color);
+					if (!visiblePositions.isEmpty()) {
+						BlockDrawer.drawOutline(event.getPoseStack(), visiblePositions, config.color);
 
-					if (config.drawTracer) {
-						BlockDrawer.drawTracerLines(null, visiblePositions, config.color);
+						if (config.drawTracer) {
+							BlockDrawer.drawTracerLines(event.getPoseStack(), visiblePositions, config.color);
+						}
 					}
 				}
 			}

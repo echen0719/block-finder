@@ -8,7 +8,7 @@ group = project.maven_group
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(17)
     }
 
     withSourcesJar()
@@ -40,9 +40,6 @@ sourceSets { // client and main
 }
 
 repositories {
-    minecraft.mavenizer(it)
-    maven fg.forgeMaven
-    maven fg.minecraftLibsMaven
     mavenCentral()
 }
 
@@ -50,28 +47,45 @@ minecraft {
     mappings channel: 'official', version: minecraft_version
 
     runs {
-        configureEach {
-            workingDir.convention layout.projectDirectory.dir('run')
+        client {
+            workingDirectory project.file('run')
 
-            systemProperty 'forge.logging.markers', 'REGISTRIES'
-            systemProperty 'forge.logging.console.level', 'debug'
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
 
             mods {
-                register("block_finder") {
+                block_finder {
                     source sourceSets.main
                 }
             }
-        }
-
-        register('client') {
             args '--username', 'echen0719'
         }
 
-        register('server') {
+        server {
+            workingDirectory project.file('run')
+
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+
+            mods {
+                block_finder {
+                    source sourceSets.main
+                }
+            }
             args '--nogui'
         }
 
-        register('data') {
+        data {
+            workingDirectory project.file('run')
+            
+            property 'forge.logging.markers', 'REGISTRIES'
+            property 'forge.logging.console.level', 'debug'
+
+            mods {
+                block_finder {
+                    source sourceSets.main
+                }
+            }
             args '--mod', 'block_finder',
                 '--all',
                 '--output', file('src/generated/resources/').absolutePath,
@@ -81,7 +95,7 @@ minecraft {
 }
 
 dependencies {
-    implementation minecraft.dependency("net.minecraftforge:forge:${minecraft_version}-${forge_version}")
+    minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
 }
 
 // HoW doEs tHiS wOrK? It took so long
@@ -90,7 +104,7 @@ dependencies {
 tasks.withType(JavaCompile).configureEach {
 	dependsOn tasks.named('processResources')
     options.encoding = 'UTF-8'
-    options.release = 21
+    options.release = 17
 }
 
 tasks.named('processResources') {

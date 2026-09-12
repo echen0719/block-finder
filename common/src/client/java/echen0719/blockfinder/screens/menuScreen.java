@@ -263,7 +263,7 @@ public class menuScreen extends Screen {
 
                 if (!configJson.has("block")) continue;
                 String blockID = configJson.get("block").getAsString();
-                Block block = BuiltInRegistries.BLOCK.get(ResourceLocation.parse(blockID));
+                Block block = BuiltInRegistries.BLOCK.get(ResourceLocation.tryParse(blockID));
                 blockConfig config = new blockConfig(block);
 
                 // using conditional to save some lines
@@ -324,7 +324,7 @@ public class menuScreen extends Screen {
         }
     }
 
-    @Override
+    // @Override
     public boolean mouseScrolled(double mouseX, double mouseY, double scrollX, double scrollY) {
         blockDropdown.handleScroll(mouseX, mouseY, scrollY);
         return true;
@@ -537,7 +537,7 @@ public class menuScreen extends Screen {
         // head hurts from background convering up GuiGraphics render components
         // found this solution where you remove .super()'s auto blur background
         // and call it first and then flush it and start new
-        renderBackground(context, mouseX, mouseY, delta);
+        renderBackground(context);
         context.flush(); 
 
         context.drawCenteredString(this.font, Component.literal("Block Finder"), this.width / 2, 10, white);

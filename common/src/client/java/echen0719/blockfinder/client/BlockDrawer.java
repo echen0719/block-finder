@@ -13,7 +13,6 @@ import org.joml.Vector4f;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.BufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
-import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.Tesselator;
 import com.mojang.blaze3d.vertex.VertexBuffer;
@@ -61,7 +60,9 @@ public class BlockDrawer {
     }
 
     private static BufferBuilder initBuilder() {
-        return Tesselator.getInstance().begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL);
+        BufferBuilder builder = Tesselator.getInstance().getBuilder();
+        builder.begin(VertexFormat.Mode.LINES, DefaultVertexFormat.POSITION_COLOR_NORMAL);
+        return builder;
     }
 
     public static void drawOutline(PoseStack matrices, List<BlockPos> positions, Object[] color) {
@@ -109,7 +110,7 @@ public class BlockDrawer {
             drawEdge(builder, x2, y1, z2, x2, y2, z2, r, g, b, a); // Side-East
         }
 
-        MeshData mesh = builder.buildOrThrow();
+        BufferBuilder.RenderedBuffer mesh = builder.end();
         vertexBuffer.bind(); 
         vertexBuffer.upload(mesh);
 
@@ -124,7 +125,7 @@ public class BlockDrawer {
         RenderSystem.setShader(GameRenderer::getRendertypeLinesShader);
 
         vertexBuffer.drawWithShader(
-            RenderSystem.getModelViewMatrix(),
+            matrices.last().pose(),
             RenderSystem.getProjectionMatrix(),
             GameRenderer.getRendertypeLinesShader() 
         );
@@ -134,8 +135,6 @@ public class BlockDrawer {
         RenderSystem.enableDepthTest();
         RenderSystem.enableCull();
         RenderSystem.disableBlend();
-
-        mesh.close();
     }
 
     public static void drawTracerLines(PoseStack matrices, List<BlockPos> positions, Object[] color) {
@@ -172,7 +171,7 @@ public class BlockDrawer {
             drawEdge(builder, startX, startY, startZ, dx, dy, dz, r, g, b, a);
         }
 
-        MeshData mesh = builder.buildOrThrow();
+        BufferBuilder.RenderedBuffer mesh = builder.end();
         vertexBuffer.bind(); 
         vertexBuffer.upload(mesh);
 
@@ -187,7 +186,7 @@ public class BlockDrawer {
         RenderSystem.setShader(GameRenderer::getRendertypeLinesShader);
 
         vertexBuffer.drawWithShader(
-            RenderSystem.getModelViewMatrix(),
+            matrices.last().pose(), // for some reason this over RenderSystem.getModelViewMatrix()
             RenderSystem.getProjectionMatrix(),
             GameRenderer.getRendertypeLinesShader() 
         );
@@ -197,15 +196,13 @@ public class BlockDrawer {
         RenderSystem.enableDepthTest();
         RenderSystem.enableCull();
         RenderSystem.disableBlend();
-
-        mesh.close();
     }
 
     private static void drawEdge(BufferBuilder buffer, 
     float x1, float y1, float z1, float x2, float y2, float z2,
     float r, float g, float b, float a) {
         // start & end
-        buffer.addVertex(x1, y1, z1).setColor(r, g, b, a).setNormal(1, 1, 1);
-        buffer.addVertex(x2, y2, z2).setColor(r, g, b, a).setNormal(1, 1, 1);
+        buffer.vertex(x1, y1, z1).color(r, g, b, a).normal(1, 1, 1).endVertex();
+        buffer.vertex(x2, y2, z2).color(r, g, b, a).normal(1, 1, 1).endVertex();
     }
 }

@@ -24,7 +24,7 @@ public class BlockFinder implements ModInitializer {
 		LOGGER.info("Hello Fabric world!");
 	}
 
-	public static ResourceLocation id(String path) {
+	/* public static ResourceLocation id(String path) {
 		return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);
-	}
+	} */
 }

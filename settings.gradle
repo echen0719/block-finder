@@ -5,10 +5,6 @@ pluginManagement {
 			url = 'https://maven.fabricmc.net/'
 		}
 		maven {
-			name = "NeoForge"
-			url = 'https://maven.neoforged.net/releases' 
-		}
-		maven {
 			name = "Forge"
 			url = 'https://maven.minecraftforge.net/' 
 		}
@@ -22,5 +18,4 @@ rootProject.name = 'block_finder'
 
 include ('common')
 include ('fabric')
-include ('neoforge')
 include('forge')
