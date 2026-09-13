@@ -35,6 +35,7 @@ Make sure to install Fabric API valid for the Fabric mod.
 
 **Note to player:** 
 *   If you notice "jumping" issues with the tracer lines, turn off View Bobbing in settings (Options → Accessibility Settings → View Bobbing: Off)
+*   If you run into display problems on Wayland with Forge or Neoforge, run your Minecraft instance with X11.
 *   If you want to request me to make a release for a different Minecraft version, or if there are any issues, suggestions, please add them to the GitHub [https://github.com/echen0719/block-finder/issues](https://github.com/echen0719/block-finder/issues) so I can improve this mod (with a label please).
 
 ## Credits
