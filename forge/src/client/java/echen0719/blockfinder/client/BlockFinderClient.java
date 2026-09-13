@@ -2,6 +2,7 @@ package echen0719.blockfinder.client;
 
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.renderer.LevelTargetBundle;
 import net.minecraft.client.renderer.state.LevelRenderState;
 import net.minecraft.core.BlockPos;
@@ -113,8 +114,8 @@ public class BlockFinderClient {
 	public void addFramePass(AddFramePassEvent event) {
 		event.addPass(Identifier.fromNamespaceAndPath(MOD_ID, "blockfinder_lines"), new FramePassManager.PassDefinition() {
 			@Override
-			public void extracts(LevelTargetBundle bundle, FramePass pass) {
-				pass.readsAndWrites(bundle.main);
+			public void extracts(LevelTargetBundle bundle, FramePass pass, DeltaTracker deltaTracker) {
+				bundle.main = pass.readsAndWrites(bundle.main);
 			}
 
 			@Override
