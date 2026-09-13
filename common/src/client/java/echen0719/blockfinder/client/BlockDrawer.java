@@ -119,9 +119,9 @@ public class BlockDrawer {
         RenderSystem.defaultBlendFunc();
         RenderSystem.disableCull();
         RenderSystem.disableDepthTest();
-        RenderSystem.depthMask(false); 
+        RenderSystem.depthMask(false);
 
-        RenderSystem.lineWidth(3.0f);
+        RenderSystem.lineWidth(2.0f);
         RenderSystem.setShader(CoreShaders.RENDERTYPE_LINES);
 
         vertexBuffer.drawWithShader(
@@ -161,16 +161,15 @@ public class BlockDrawer {
 
         for (BlockPos position : positions) {
             Vec3 targetPosition = Vec3.atCenterOf(position); // get center of block
-
-            float dx = (float)(targetPosition.x - startPosition.x);
-            float dy = (float)(targetPosition.y - startPosition.y);
-            float dz = (float)(targetPosition.z - startPosition.z);
-
             float startX = (float) (startPosition.x - cameraPosition.x);
             float startY = (float) (startPosition.y - cameraPosition.y);
             float startZ = (float) (startPosition.z - cameraPosition.z);
 
-            drawEdge(builder, startX, startY, startZ, dx, dy, dz, r, g, b, a);
+            float targetX = (float) (targetPosition.x - cameraPosition.x);
+            float targetY = (float) (targetPosition.y - cameraPosition.y);
+            float targetZ = (float) (targetPosition.z - cameraPosition.z);
+
+            drawEdge(builder, startX, startY, startZ, targetX, targetY, targetZ, r, g, b, a);
         }
 
         MeshData mesh = builder.buildOrThrow();
@@ -184,7 +183,7 @@ public class BlockDrawer {
         RenderSystem.disableDepthTest();
         RenderSystem.depthMask(false);
 
-        RenderSystem.lineWidth(3.0f);
+        RenderSystem.lineWidth(2.0f);
         RenderSystem.setShader(CoreShaders.RENDERTYPE_LINES);
 
         vertexBuffer.drawWithShader(
@@ -205,8 +204,12 @@ public class BlockDrawer {
     private static void drawEdge(BufferBuilder buffer, 
     float x1, float y1, float z1, float x2, float y2, float z2,
     float r, float g, float b, float a) {
+        float nx = x2 - x1;
+        float ny = y2 - y1;
+        float nz = z2 - z1;
+
         // start & end
-        buffer.addVertex(x1, y1, z1).setColor(r, g, b, a).setNormal(1, 1, 1);
-        buffer.addVertex(x2, y2, z2).setColor(r, g, b, a).setNormal(1, 1, 1);
+        buffer.addVertex(x1, y1, z1).setColor(r, g, b, a).setNormal(nx, ny, nz);
+        buffer.addVertex(x2, y2, z2).setColor(r, g, b, a).setNormal(nx, ny, nz);
     }
 }
