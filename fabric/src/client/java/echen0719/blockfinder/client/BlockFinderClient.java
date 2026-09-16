@@ -44,7 +44,7 @@ public class BlockFinderClient implements ClientModInitializer {
 
 		scanKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
 			"key.blockfinder.scan", 
-			InputConstants.Type.KEYSYM, 
+			InputConstants.Type.KEYBOARD, 
 			GLFW.GLFW_KEY_V,
 			category
 		));

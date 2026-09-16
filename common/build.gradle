@@ -24,6 +24,7 @@ sourceSets {
 
 dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	compileOnly "org.lwjgl:lwjgl-tinyfd:3.4.3"
 }
 
 

@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'net.neoforged.gradle.userdev' version '7.1.38'
+    id 'net.neoforged.gradle.userdev' version '7.1.39'
 }
 
 version = project.mod_version
@@ -69,6 +69,12 @@ repositories {
 
 dependencies {
     implementation "net.neoforged:neoforge:${neo_version}"
+    compileOnly "org.lwjgl:lwjgl-tinyfd:3.4.3"
+    runtimeOnly "org.lwjgl:lwjgl-tinyfd:3.4.3:natives-windows"
+    runtimeOnly "org.lwjgl:lwjgl-tinyfd:3.4.3:natives-linux"
+	runtimeOnly "org.lwjgl:lwjgl-tinyfd:3.4.3:natives-macos"
+	runtimeOnly "org.lwjgl:lwjgl-tinyfd:3.4.3:natives-macos-arm64"
+	compileOnly "org.lwjgl:lwjgl-glfw:3.4.3"
 }
 
 tasks.withType(JavaCompile).configureEach {

@@ -41,7 +41,7 @@ public class BlockFinderClient {
 	);
 	public static KeyMapping scanKey = new KeyMapping(
 		"key.blockfinder.scan", 
-		InputConstants.Type.KEYSYM, 
+		InputConstants.Type.KEYBOARD, 
 		GLFW.GLFW_KEY_V,
 		category
 	);

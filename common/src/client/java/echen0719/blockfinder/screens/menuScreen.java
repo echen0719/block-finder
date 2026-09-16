@@ -333,7 +333,7 @@ public class menuScreen extends Screen {
 
     @Override
     public boolean mouseClicked(MouseButtonEvent event, boolean isDoubleClick) {
-        if (event.button() == 0) {
+        if (event.button() == 1) { // changed to 1 instead
             double x = event.x();
             double y = event.y();
 
@@ -432,7 +432,7 @@ public class menuScreen extends Screen {
     
     @Override
     public boolean mouseReleased(MouseButtonEvent event) {
-        if (event.button() == 0) {
+        if (event.button() == 1) { // changed to 1 instead
             blockDropdown.handleMouseRelease();
         }
         return super.mouseReleased(event);

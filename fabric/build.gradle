@@ -32,6 +32,12 @@ dependencies {
 	// To change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	implementation "org.lwjgl:lwjgl-tinyfd:3.4.3" // to handle files
+	runtimeOnly "org.lwjgl:lwjgl-tinyfd:3.4.3:natives-windows"
+	runtimeOnly "org.lwjgl:lwjgl-tinyfd:3.4.3:natives-linux"
+	runtimeOnly "org.lwjgl:lwjgl-tinyfd:3.4.3:natives-macos"
+	runtimeOnly "org.lwjgl:lwjgl-tinyfd:3.4.3:natives-macos-arm64"
+	compileOnly "org.lwjgl:lwjgl-glfw:3.4.3"
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"

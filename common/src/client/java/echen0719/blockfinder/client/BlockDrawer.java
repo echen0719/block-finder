@@ -1,7 +1,7 @@
 package echen0719.blockfinder.client;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.renderer.DynamicUniforms;
+import net.minecraft.client.renderer.DynamicGpuData;
 import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
@@ -12,13 +12,15 @@ import com.mojang.blaze3d.vertex.ByteBufferBuilder;
 import com.mojang.blaze3d.vertex.DefaultVertexFormat;
 import com.mojang.blaze3d.vertex.MeshData;
 import com.mojang.blaze3d.vertex.PoseStack;
-import com.mojang.blaze3d.PrimitiveTopology;
-import com.mojang.blaze3d.buffers.GpuBuffer;
-import com.mojang.blaze3d.buffers.GpuBufferSlice;
-import com.mojang.blaze3d.pipeline.DepthStencilState;
-import com.mojang.blaze3d.pipeline.RenderPipeline;
-import com.mojang.blaze3d.platform.CompareOp;
-import com.mojang.blaze3d.systems.RenderPass;
+import com.mojang.renderpearl.api.pipeline.PrimitiveTopology;
+import com.mojang.renderpearl.api.buffers.GpuBuffer;
+import com.mojang.renderpearl.api.buffers.GpuBufferSlice;
+import com.mojang.renderpearl.api.pipeline.DepthStencilState;
+import com.mojang.renderpearl.api.pipeline.RenderPipeline;
+import com.mojang.renderpearl.api.pipeline.CompareOp;
+import com.mojang.renderpearl.api.pipeline.ColorTargetState;
+import com.mojang.renderpearl.api.pipeline.BlendFunction;
+import com.mojang.renderpearl.api.commands.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 
 import java.util.OptionalDouble;
@@ -39,6 +41,7 @@ public class BlockDrawer {
         RenderPipelines.LINES_SNIPPET).
         withLocation(Identifier.fromNamespaceAndPath("blockfinder", "pipeline/see_through_lines")).
         withVertexBinding(0, DefaultVertexFormat.POSITION_COLOR_NORMAL_LINE_WIDTH).
+        withColorTargetState(new ColorTargetState(BlendFunction.TRANSLUCENT)). // needed for 26.3?
         withCull(false).withPrimitiveTopology(PrimitiveTopology.LINES).
         withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false)
     ).build();
@@ -49,7 +52,6 @@ public class BlockDrawer {
 
     private static Map<Integer, Integer> tracerIndexCountCache = new HashMap<>();
     private static Map<Integer, GpuBuffer> tracerVertexBufferCache = new HashMap<>();
-
     private static final RenderSystem.AutoStorageIndexBuffer indices = RenderSystem.getSequentialBuffer(PrimitiveTopology.LINES);
 
     public static int getColor(Object[] color) {
@@ -169,7 +171,7 @@ public class BlockDrawer {
 
             renderPass.setVertexBuffer(0, vertexBuffer.slice());
             renderPass.setIndexBuffer(indices.getBuffer(indexCount), indices.type());
-            renderPass.setPipeline(seeThroughLines);
+            renderPass.setPipeline(RenderSystem.getCompiledPipeline(seeThroughLines));
 
             for (BlockPos position : positions) {
                 modelViewStack.pushMatrix();
@@ -183,7 +185,7 @@ public class BlockDrawer {
                 modelViewStack.popMatrix();
 
                 GpuBufferSlice[] gpubufferslice = RenderSystem.getDynamicUniforms().writeTransforms(
-                    new DynamicUniforms.Transform(
+                    new DynamicGpuData.Transform(
                         matrix,
                         new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), 
                         new Vector3f(), 
@@ -227,7 +229,7 @@ public class BlockDrawer {
             
             renderPass.setVertexBuffer(0, tracerVertexBuffer.slice());
             renderPass.setIndexBuffer(indices.getBuffer(tracerIndexCount), indices.type());
-            renderPass.setPipeline(seeThroughLines);
+            renderPass.setPipeline(RenderSystem.getCompiledPipeline(seeThroughLines));
             
             for (BlockPos position : positions) {
                 Vec3 targetPosition = Vec3.atCenterOf(position); // get center of block
@@ -249,7 +251,7 @@ public class BlockDrawer {
                 modelViewStack.popMatrix();
                 
                 GpuBufferSlice[] gpubufferslice = RenderSystem.getDynamicUniforms().writeTransforms(
-                    new DynamicUniforms.Transform(
+                    new DynamicGpuData.Transform(
                         matrix,
                         new Vector4f(1.0F, 1.0F, 1.0F, 1.0F), 
                         new Vector3f(), 
