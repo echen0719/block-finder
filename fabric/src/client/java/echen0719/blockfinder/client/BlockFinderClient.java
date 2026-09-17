@@ -3,11 +3,14 @@ package echen0719.blockfinder.client;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
+import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.ClickEvent;
 import net.minecraft.resources.Identifier;
 
 import com.mojang.blaze3d.platform.InputConstants;
 
 import java.io.File;
+import java.net.URI;
 import java.util.List;
 import java.util.ArrayList;
 
@@ -16,6 +19,7 @@ import org.lwjgl.sdl.SDLScancode;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.fabric.api.client.rendering.v1.hud.HudElementRegistry;
 import net.fabricmc.fabric.api.client.rendering.v1.level.LevelRenderEvents;
 import net.fabricmc.fabric.api.client.keymapping.v1.KeyMappingHelper;
@@ -25,6 +29,8 @@ import echen0719.blockfinder.screens.menuScreen;
 import echen0719.blockfinder.screens.blockConfig;
 
 public class BlockFinderClient implements ClientModInitializer {
+	public static boolean disabled = false;
+
 	public static menuScreen mainScreen;
 	public static boolean hudRegistered = false;
 
@@ -50,8 +56,36 @@ public class BlockFinderClient implements ClientModInitializer {
 			category
 		));
 
+		ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
+            disabled = !client.hasSingleplayerServer(); // Singleplayer
+            if (client.hasSingleplayerServer()) {
+                return;
+            }
+
+            // so ugly but whatever
+            if (client.player != null) {
+                client.player.sendSystemMessage(Component.literal("Block Finder (No Cheats) is disabled on multiplayer servers. \n"));
+                client.player.sendSystemMessage(Component.literal("Cheats: \n").append(Component.literal("https://www.curseforge.com/minecraft/mc-mods/block-locator/files/all").
+                    withStyle(style ->
+                        style.withColor(net.minecraft.ChatFormatting.BLUE).
+                        withUnderlined(true).
+                        withClickEvent(new ClickEvent.OpenUrl(URI.create("https://www.curseforge.com/minecraft/mc-mods/block-locator/files/all"))
+                    ))
+                ));
+                client.player.sendSystemMessage(Component.literal("No Cheats: \n").append(Component.literal("https://www.modrinth.com/mod/block-finder/versions").
+                    withStyle(style ->
+                        style.withColor(net.minecraft.ChatFormatting.BLUE).
+                        withUnderlined(true).
+                        withClickEvent(new ClickEvent.OpenUrl(URI.create("https://modrinth.com/mod/block-finder/versions"))
+                    ))
+                ));
+            }
+        });
+
 		// runs every tick or 20x/s
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
+			if (disabled) return;
+
 			while (scanKey.consumeClick()) {
 				mainScreen = new menuScreen();
 				client.setScreenAndShow(mainScreen);
