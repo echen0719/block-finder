@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 import org.lwjgl.glfw.GLFW;
+import org.lwjgl.sdl.SDLScancode;
 
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
@@ -43,9 +44,9 @@ public class BlockFinderClient implements ClientModInitializer {
     	}
 
 		scanKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
-			"key.blockfinder.scan", 
-			InputConstants.Type.KEYBOARD, 
-			GLFW.GLFW_KEY_V,
+			"key.blockfinder.scan",
+			InputConstants.Type.KEYBOARD,
+			SDLScancode.SDL_SCANCODE_V, // for some reason this one maps to 'V' properly
 			category
 		));
 

@@ -12,6 +12,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 import org.lwjgl.glfw.GLFW;
+import org.lwjgl.sdl.SDLScancode;
 
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.bus.api.IEventBus;
@@ -42,7 +43,7 @@ public class BlockFinderClient {
 	public static KeyMapping scanKey = new KeyMapping(
 		"key.blockfinder.scan", 
 		InputConstants.Type.KEYBOARD, 
-		GLFW.GLFW_KEY_V,
+		SDLScancode.SDL_SCANCODE_V, // for some reason this one maps to 'V' properly
 		category
 	);
 
