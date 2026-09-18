@@ -148,6 +148,19 @@ public class BlockDrawer {
     }
 
     public static void drawOutline(PoseStack matrices, List<BlockPos> positions, Object[] color) {
+        var colorTextureView = client.gameRenderer.mainRenderTarget().getColorTextureView();
+        var depthTextureView = client.gameRenderer.mainRenderTarget().getDepthTextureView();
+
+        try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() ->
+        "blockfinder_outline", colorTextureView, Optional.empty(), depthTextureView, OptionalDouble.empty())) {
+            drawOutline(matrices, renderPass, positions, color);
+        }
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void drawOutline(PoseStack matrices, RenderPass renderPass, List<BlockPos> positions, Object[] color) {
         if (client.level == null || positions == null || positions.isEmpty()) return;
         
         int colorKey = getColor(color);
@@ -162,12 +175,7 @@ public class BlockDrawer {
         Vec3 cameraPosition = client.gameRenderer.mainCamera().position();
         Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
 
-        var colorTextureView = client.gameRenderer.mainRenderTarget().getColorTextureView();
-        var depthTextureView = client.gameRenderer.mainRenderTarget().getDepthTextureView();
-
-        try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> 
-        "blockfinder_outline", colorTextureView, Optional.empty(), depthTextureView, OptionalDouble.empty())) { 
-            RenderSystem.bindDefaultUniforms(renderPass);
+        RenderSystem.bindDefaultUniforms(renderPass);
 
             renderPass.setVertexBuffer(0, vertexBuffer.slice());
             renderPass.setIndexBuffer(indices.getBuffer(indexCount), indices.type());
@@ -196,13 +204,22 @@ public class BlockDrawer {
                 renderPass.setUniform("DynamicTransforms", gpubufferslice[0]);
                 renderPass.drawIndexed(indexCount, 1, 0, 0, 0);
             }
+    }
+
+    public static void drawTracerLines(PoseStack matrices, List<BlockPos> positions, Object[] color) {
+        var colorTextureView = client.gameRenderer.mainRenderTarget().getColorTextureView();
+        var depthTextureView = client.gameRenderer.mainRenderTarget().getDepthTextureView();
+
+        try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() ->
+        "blockfinder_tracers", colorTextureView, Optional.empty(), depthTextureView, OptionalDouble.empty())) {
+            drawTracerLines(matrices, renderPass, positions, color);
         }
         catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    public static void drawTracerLines(PoseStack matrices, List<BlockPos> positions, Object[] color) {
+    public static void drawTracerLines(PoseStack matrices, RenderPass renderPass, List<BlockPos> positions, Object[] color) {
         if (client.level == null || positions == null || positions.isEmpty()) return;
         
         int colorKey = getColor(color);
@@ -220,12 +237,7 @@ public class BlockDrawer {
 
         Matrix4fStack modelViewStack = RenderSystem.getModelViewStack();
 
-        var colorTextureView = client.gameRenderer.mainRenderTarget().getColorTextureView();
-        var depthTextureView = client.gameRenderer.mainRenderTarget().getDepthTextureView();
-        
-        try (RenderPass renderPass = RenderSystem.getDevice().createCommandEncoder().createRenderPass(() -> 
-        "blockfinder_tracers", colorTextureView, Optional.empty(), depthTextureView, OptionalDouble.empty())) { 
-            RenderSystem.bindDefaultUniforms(renderPass);
+        RenderSystem.bindDefaultUniforms(renderPass);
             
             renderPass.setVertexBuffer(0, tracerVertexBuffer.slice());
             renderPass.setIndexBuffer(indices.getBuffer(tracerIndexCount), indices.type());
@@ -261,10 +273,6 @@ public class BlockDrawer {
                 renderPass.setUniform("DynamicTransforms", gpubufferslice[0]);
                 renderPass.drawIndexed(tracerIndexCount, 1, 0, 0, 0);
             }
-        }
-        catch (Exception e) {
-            e.printStackTrace();
-        }
     }
 
     private static void drawEdge(BufferBuilder buffer, Matrix4f matrix, 
