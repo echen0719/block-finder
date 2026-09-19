@@ -32,7 +32,7 @@ public class searchableDropdown extends AbstractWidget {
     // layout constants
     private int itemHeight = 20;
     private int maxDisplayedItems = 7;
-    private int scrollBarWidth = 5;
+    private int scrollBarWidth = 7;
 
     // colors
     private static int white = 0xFFFFFFFF;
@@ -109,7 +109,7 @@ public class searchableDropdown extends AbstractWidget {
     }
 
     private void recalculateDimensions() {
-        int maxWidth = 0;
+        /* int maxWidth = 0;
 
         for (Block block : filteredBlocks) {
             int textWidth = client.font.width(block.getName().getString());
@@ -125,7 +125,7 @@ public class searchableDropdown extends AbstractWidget {
             if (searchBox != null) {
                 searchBox.setWidth(maxWidth);
             }
-        }
+        } */
 
         tableX = this.getX();
         tableY = this.getY() + this.getHeight();
@@ -172,7 +172,7 @@ public class searchableDropdown extends AbstractWidget {
             int itemY = tableY + (i * itemHeight);
 
             // highlight
-            if (mouseX >= tableX && mouseX <= tableX + tableWidth && mouseY >= itemY && mouseY < itemY + itemHeight) {
+            if (mouseX >= tableX && mouseX <= tableX + tableWidth - scrollBarWidth && mouseY >= itemY && mouseY < itemY + itemHeight) {
                 context.fill(tableX, itemY, tableX + tableWidth, itemY + itemHeight, lightGray);
             }
 
