@@ -11,9 +11,12 @@ import java.io.FileWriter;
 import java.util.List;
 import java.util.ArrayList;
 
-import org.lwjgl.PointerBuffer;
-import org.lwjgl.system.MemoryStack;
-import org.lwjgl.util.tinyfd.TinyFileDialogs;
+// static? I don't really know why, gotta learn it ig
+import static org.lwjgl.system.MemoryUtil.memGetAddress;
+import static org.lwjgl.system.MemoryUtil.memUTF8;
+
+import org.lwjgl.sdl.SDLDialog;
+import org.lwjgl.sdl.SDL_DialogFileCallbackI;
 
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -48,6 +51,7 @@ public class menuScreen extends Screen {
     private Checkbox autoRescanCheckbox;
     private Checkbox showHUDCheckbox;
     private Checkbox drawLinesCheckbox;
+    private SDL_DialogFileCallbackI fileDialogCallback;
 
     // colors
     private static int white = 0xFFFFFFFF;
@@ -196,52 +200,62 @@ public class menuScreen extends Screen {
             BlockScanner.autoRescanReady = false;
         });
 
+        // https://wiki.libsdl.org/SDL3/SDL_ShowSaveFileDialog
+        // https://wiki.libsdl.org/SDL3/SDL_DialogFileCallback
         loadButton = guiUtils.createButton(this, "↑", 5, this.height - 25, 20, 20, button -> {
-            try (MemoryStack stack = MemoryStack.stackPush()) {
-                File gameDir = Minecraft.getInstance().gameDirectory; // why wasn't I using this before D:
-                File folder = new File(gameDir, "blockfinder");
-                if (!folder.exists()) {
-                    folder.mkdirs(); // Ensure the directory exists before opening the dialog
-                }
-                
-                String selectedPath = TinyFileDialogs.tinyfd_openFileDialog(
-                    "Load Config", folder.getAbsolutePath() + File.separator,
-                    null, null, false
-                ); // only one select at a time
-                
-                if (selectedPath != null) {
-                    loadFromFile(selectedPath);
-                }
-            } 
-            catch (Exception e) {
-                e.printStackTrace();
+            File gameDir = Minecraft.getInstance().gameDirectory; // why wasn't I using this before D:
+            File folder = new File(gameDir, "blockfinder");
+            if (!folder.exists()) {
+                folder.mkdirs(); // Ensure the directory exists before opening the dialog
             }
+
+            fileDialogCallback = (userdata, fileList, filter) -> {
+                try {
+                    if (fileList == 0) return;
+
+                    // basically, user selects it, minecraft calls it from main thread
+                    String selectedPath = memUTF8(memGetAddress(fileList));
+
+                    String path = selectedPath;
+                    Minecraft.getInstance().execute(() -> loadFromFile(path));
+                }
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
+                finally { // reset dialog data
+                    fileDialogCallback = null;
+                }
+            };
+            
+            SDLDialog.SDL_ShowOpenFileDialog(fileDialogCallback, 0, 0, null, folder.getAbsolutePath() + File.separator, false);
         });
 
         saveButton = guiUtils.createButton(this, "↓", 30, this.height - 25, 20, 20, button -> {
-            try (MemoryStack stack = MemoryStack.stackPush()) {
-                PointerBuffer filters = stack.mallocPointer(1);
-                filters.put(stack.UTF8("*.json"));
-                filters.flip();
-                
-                File gameDir = Minecraft.getInstance().gameDirectory;
-                File folder = new File(gameDir, "blockfinder");
+            File gameDir = Minecraft.getInstance().gameDirectory;
+            File folder = new File(gameDir, "blockfinder");
 
-                String selectedPath = TinyFileDialogs.tinyfd_saveFileDialog(
-                    "Save Config", folder.getAbsolutePath() + File.separator, // open in dir instead of outside
-                    filters, "JSON Files"
-                );
+            fileDialogCallback = (userdata, fileList, filter) -> {
+                try {
+                    if (fileList == 0) return;
 
-                if (selectedPath != null) {
+                    String selectedPath = memUTF8(memGetAddress(fileList));
                     if (!selectedPath.toLowerCase().endsWith(".json")) {
                         selectedPath += ".json";
                     }
-                    saveToFile(selectedPath);
+
+                    String path = selectedPath;
+                    Minecraft.getInstance().execute(() -> saveToFile(path));
                 }
-            }
-            catch (Exception e) {
-                e.printStackTrace();
-            }
+                catch (Exception e) {
+                    e.printStackTrace();
+                }
+                finally {
+                    fileDialogCallback = null;
+                }
+            };
+
+
+            SDLDialog.SDL_ShowSaveFileDialog(fileDialogCallback, 0, 0, null, folder.getAbsolutePath() + File.separator);
         });
 
         this.addRenderableWidget(submitButton);

@@ -12,7 +12,6 @@ import java.io.File;
 import java.util.List;
 import java.util.ArrayList;
 
-import org.lwjgl.glfw.GLFW;
 import org.lwjgl.sdl.SDLScancode;
 
 import net.fabricmc.api.ClientModInitializer;
