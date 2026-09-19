@@ -197,10 +197,6 @@ public class menuScreen extends Screen {
 
         loadButton = guiUtils.createButton(this, "↑", 5, this.height - 25, 20, 20, button -> {
             try (MemoryStack stack = MemoryStack.stackPush()) {
-                PointerBuffer filters = stack.mallocPointer(1);
-                filters.put(stack.UTF8("*.json"));
-                filters.flip();
-                
                 File gameDir = Minecraft.getInstance().gameDirectory;
                 File folder = new File(gameDir, "blockfinder");
                 if (!folder.exists()) {
@@ -209,7 +205,7 @@ public class menuScreen extends Screen {
                 
                 String selectedPath = TinyFileDialogs.tinyfd_openFileDialog(
                     "Load Config", folder.getAbsolutePath() + File.separator,
-                    filters, "JSON Files", false
+                    null, null, false
                 ); // only one select at a time
                 
                 if (selectedPath != null) {
@@ -236,6 +232,9 @@ public class menuScreen extends Screen {
                 );
 
                 if (selectedPath != null) {
+                    if (!selectedPath.toLowerCase().endsWith(".json")) {
+                        selectedPath += ".json";
+                    }
                     saveToFile(selectedPath);
                 }
             }
