@@ -5,6 +5,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.resources.Identifier;
 
+import com.mojang.blaze3d.pipeline.RenderPipeline;
 import com.mojang.blaze3d.platform.InputConstants;
 
 import java.io.File;
@@ -26,6 +27,7 @@ import echen0719.blockfinder.screens.blockConfig;
 public class BlockFinderClient implements ClientModInitializer {
 	public static menuScreen mainScreen;
 	public static boolean hudRegistered = false;
+	private static boolean pipelineRegistered = false;
 
 	public static KeyMapping scanKey;
 	private static final KeyMapping.Category category = KeyMapping.Category.register(
@@ -85,6 +87,11 @@ public class BlockFinderClient implements ClientModInitializer {
 		LevelRenderEvents.END_MAIN.register(context -> { // runs every frame
 			Minecraft client = Minecraft.getInstance();
 
+			if (!pipelineRegistered) {
+				registerPipeline();
+				pipelineRegistered = true;
+			}
+
 			if (BlockScanner.foundBlocks != null) {
 				int renderDistance = client.options.getEffectiveRenderDistance();
 
@@ -119,6 +126,29 @@ public class BlockFinderClient implements ClientModInitializer {
 				}
             }
 		});
+	}
+
+	// [19:54:00] [Render thread/ERROR] (Iris) Missing program 
+	// blockfinder:pipeline/see_through_lines in override list. This is 
+	// not a critical problem, but it could lead to weird rendering.
+
+	// prevents this issue
+	// solution found by ChatGPT
+	private static void registerPipeline() {
+		try {
+			Class<?> pipelinesClass = Class.forName("net.irisshaders.iris.pipeline.IrisPipelines");
+			Class<?> shaderKeyClass = Class.forName("net.irisshaders.iris.pipeline.programs.ShaderKey");
+			Object linesShader = Enum.valueOf((Class) shaderKeyClass, "LINES");
+			
+			pipelinesClass.getMethod("assignPipeline", RenderPipeline.class, shaderKeyClass).invoke(
+				null, 
+				BlockDrawer.getSeeThroughLinesPipeline(), 
+				linesShader
+			);
+		} 
+		catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	public static void showHUD() {
