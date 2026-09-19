@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.ArrayList;
 
 import org.lwjgl.glfw.GLFW;
+import org.lwjgl.sdl.SDLScancode;
 
 import net.minecraftforge.eventbus.api.listener.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -44,8 +45,8 @@ public class BlockFinderClient {
 	);
 	public static KeyMapping scanKey = new KeyMapping(
 		"key.blockfinder.scan", 
-		InputConstants.Type.KEYSYM, 
-		GLFW.GLFW_KEY_V,
+		InputConstants.Type.KEYBOARD, 
+		SDLScancode.SDL_SCANCODE_V, // for some reason this one maps to 'V' properly
 		category
 	);
 
@@ -113,7 +114,7 @@ public class BlockFinderClient {
 	public void addFramePass(AddFramePassEvent event) {
 		event.addPass(Identifier.fromNamespaceAndPath(MOD_ID, "blockfinder_lines"), new FramePassManager.PassDefinition() {
 			@Override
-			public void extracts(LevelTargetBundle bundle, FramePass pass) {
+			public void extracts(LevelTargetBundle bundle, FramePass pass, LevelRenderState state) {
 				pass.readsAndWrites(bundle.main);
 			}
 
