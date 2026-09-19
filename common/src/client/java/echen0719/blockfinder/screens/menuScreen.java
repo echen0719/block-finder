@@ -75,7 +75,15 @@ public class menuScreen extends Screen {
         minYBox.setResponder(value -> {if (selectedConfig != null) selectedConfig.minY = value;});
         maxYBox.setResponder(value -> {if (selectedConfig != null) selectedConfig.maxY = value;});
         
-        blockDropdown = new searchableDropdown(this, 10, 30, 225, 20, "Block name");
+        int dropdownMaxWidth = 225;
+        for (Block block : BuiltInRegistries.BLOCK) {
+            int textWidth = Minecraft.getInstance().font.width(block.getName().getString());
+            if (textWidth > dropdownMaxWidth) {
+                dropdownMaxWidth = textWidth;
+            }
+        }
+
+        blockDropdown = new searchableDropdown(this, 10, 30, dropdownMaxWidth + 10, 20, "Block name");
 
         autoRescanCheckbox = guiUtils.createCheckbox(this, "Auto Rescan", this.width - 170, 30, BlockScanner.autoRescan, (checkbox, selected) -> {
             BlockScanner.autoRescan = selected;
@@ -271,6 +279,7 @@ public class menuScreen extends Screen {
                 config.radius = configJson.has("radius") ? configJson.get("radius").getAsString() : "";
                 config.minY = configJson.has("minY") ? configJson.get("minY").getAsString() : "";
                 config.maxY = configJson.has("maxY") ? configJson.get("maxY").getAsString() : "";
+                config.drawTracer = configJson.has("drawTracer") ? configJson.get("drawTracer").getAsBoolean() : false;
                 
                 if (configJson.has("color")) {
                     JsonArray colorJson = configJson.getAsJsonArray("color");
@@ -306,6 +315,7 @@ public class menuScreen extends Screen {
                 configJson.addProperty("radius", config.radius);
                 configJson.addProperty("minY", config.minY);
                 configJson.addProperty("maxY", config.maxY);
+                configJson.addProperty("drawTracer", config.drawTracer);
 
                 JsonArray colorArray = new Gson().toJsonTree(config.color).getAsJsonArray();
                 configJson.add("color", colorArray);
