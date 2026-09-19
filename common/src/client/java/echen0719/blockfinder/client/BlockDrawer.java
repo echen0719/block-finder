@@ -43,6 +43,10 @@ public class BlockDrawer {
         withCull(false).withDepthStencilState(new DepthStencilState(CompareOp.ALWAYS_PASS, false)
     ).build();
 
+    public static RenderPipeline getSeeThroughLinesPipeline() {
+        return seeThroughLines;
+    }
+
     // caching instead of rebuilding every update
     private static Map<Integer, Integer> indexCountCache = new HashMap<>();
     private static Map<Integer, GpuBuffer> vertexBufferCache = new HashMap<>();
@@ -149,7 +153,6 @@ public class BlockDrawer {
         if (client.level == null || positions == null || positions.isEmpty()) return;
         
         int colorKey = getColor(color);
-
         if (!vertexBufferCache.containsKey(colorKey)) {
             initBuffer(color);
         }
@@ -209,7 +212,6 @@ public class BlockDrawer {
         if (client.level == null || positions == null || positions.isEmpty()) return;
         
         int colorKey = getColor(color);
-        
         if (!tracerVertexBufferCache.containsKey(colorKey)) {
             initBuffer(color);
         }
