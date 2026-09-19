@@ -40,6 +40,10 @@ public class BlockDrawer {
         withVertexFormat(DefaultVertexFormat.POSITION_COLOR_NORMAL_LINE_WIDTH, VertexFormat.Mode.LINES).
         withCull(false).withDepthTestFunction(DepthTestFunction.NO_DEPTH_TEST).build();
 
+    public static RenderPipeline getSeeThroughLinesPipeline() {
+        return seeThroughLines;
+    }
+
     // caching instead of rebuilding every update
     private static Map<Integer, Integer> indexCountCache = new HashMap<>();
     private static Map<Integer, GpuBuffer> vertexBufferCache = new HashMap<>();
@@ -146,7 +150,6 @@ public class BlockDrawer {
         if (client.level == null || positions == null || positions.isEmpty()) return;
         
         int colorKey = getColor(color);
-
         if (!vertexBufferCache.containsKey(colorKey)) {
             initBuffer(color);
         }
@@ -206,7 +209,6 @@ public class BlockDrawer {
         if (client.level == null || positions == null || positions.isEmpty()) return;
         
         int colorKey = getColor(color);
-        
         if (!tracerVertexBufferCache.containsKey(colorKey)) {
             initBuffer(color);
         }
