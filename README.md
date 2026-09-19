@@ -12,7 +12,7 @@ Block Locator (Finder) is a Minecraft mod that lets you quickly find blocks in b
 *   Toggle HUD: Shows a live update GUI of the amount of found blocks.
 *   Submit button: Click to start the scan.
 *   Clear All button: Click to remove all active pool blocks.
-*   Load/Save buttons: Import or export JSON for scan configurations (↑ for Load, ↓ for Save)
+*   Load/Save buttons: Import or export JSON for scan configurations (↑ for Load, ↓ for Save).
 
 ![Labeled instructions for usage](https://cdn.modrinth.com/data/cached_images/eaf3c0ead61365d56c3f9cc0efd8dfb122d267cc_0.webp)
 
@@ -30,13 +30,14 @@ Make sure to install Fabric API valid for the Fabric mod.
 *   Performs scans on a separate thread to reduce gameplay stuttering.
 *   Updates results when blocks are broken/placed.
 *   Has a live HUD giving counts of found blocks.
-*   Saves and loads configurations through JSON
-*   Works in both singleplayer and multiplayer (except .nc versions for Modrinth)
+*   Saves and loads configurations through JSON.
+*   Works in both singleplayer and multiplayer (except .nc versions for Modrinth).
+*   Works with Iris shaders (report issues as needed).
 
 **Note to player:** 
 *   If you notice "jumping" issues with the tracer lines, turn off View Bobbing in settings (Options → Accessibility Settings → View Bobbing: Off)
 *   If you run into display problems on Wayland with Forge or Neoforge, run your Minecraft instance with X11.
-*   If you want to request me to make a release for a different Minecraft version, or if there are any issues, suggestions, please add them to the GitHub [https://github.com/echen0719/block-finder/issues](https://github.com/echen0719/block-finder/issues) so I can improve this mod (with a label please).
+*   If you want to request me to make a release for a different Minecraft version, or if there are any issues, suggestions, please add them to the GitHub [https://github.com/echen0719/block-finder/issues](https://github.com/echen0719/block-finder/issues) or [https://docs.google.com/forms/d/e/1FAIpQLSeA5xHOVSt4gOofTIGXKj6x84aETpXDe4h4o3GRChpovcCMpg/viewform](https://docs.google.com/forms/d/e/1FAIpQLSeA5xHOVSt4gOofTIGXKj6x84aETpXDe4h4o3GRChpovcCMpg/viewform) so I can improve this mod (with a label please).
 
 ## Credits
 
