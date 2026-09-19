@@ -15,7 +15,6 @@ import java.net.URI;
 import java.util.List;
 import java.util.ArrayList;
 
-import org.lwjgl.glfw.GLFW;
 import org.lwjgl.sdl.SDLScancode;
 
 import net.neoforged.bus.api.SubscribeEvent;
