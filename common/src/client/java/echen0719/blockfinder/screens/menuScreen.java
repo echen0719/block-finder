@@ -10,6 +10,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 // static? I don't really know why, gotta learn it ig
 import static org.lwjgl.system.MemoryUtil.memGetAddress;
@@ -60,9 +62,12 @@ public class menuScreen extends Screen {
     private static int darkTranslucentGray = 0xAA202020;
     private static int midGray = 0xAA303030;
     private static int black = 0xFF000000;
+    private static int green = 0x55FF55;
+    private static int red = 0xFF5555;
 
     // pool values
     public static final java.util.List<blockConfig> activePool = new java.util.ArrayList<>();
+    private final Map<blockConfig, Button> blockRenderToggles = new HashMap<>();
     private static blockConfig selectedConfig = null;
 
     public menuScreen() {
@@ -193,6 +198,12 @@ public class menuScreen extends Screen {
 
         clearButton = guiUtils.createButton(this, "Clear All", this.width / 2 + 10, this.height - 40, 100, 20, button -> {
             activePool.clear();
+
+            for (Button renderButton : blockRenderToggles.values()) {
+                this.removeWidget(renderButton);
+            }
+
+            blockRenderToggles.clear();
             selectedConfig = null;
             BlockDrawer.clear();
             
@@ -391,13 +402,19 @@ public class menuScreen extends Screen {
             int currentY = startY + 20;
             int maxWidth = this.width - 10;
 
+            for (Button renderButton : blockRenderToggles.values()) {
+                if (x >= renderButton.getX() && x <= renderButton.getX() + renderButton.getWidth() && y >= renderButton.getY() && y <= renderButton.getY() + renderButton.getHeight()) {
+                    return super.mouseClicked(event, isDoubleClick);
+                }
+            }
+
             for (int i = 0; i < activePool.size(); i++) {
                 blockConfig config = activePool.get(i);
                 String name = config.block.getName().getString();
                 int textWidth = this.font.width(name);
                 int closeWidth = this.font.width("x");
-
-                int itemWidth = 24 + textWidth + 24 + closeWidth + 4;
+                int toggleTextWidth = Math.max(this.font.width("✔"), this.font.width("❌"));
+                int itemWidth = 24 + textWidth + 24 + toggleTextWidth + 10 + closeWidth + 4;
 
                 if (currentX + itemWidth > maxWidth) {
                     currentX = startX;
@@ -408,11 +425,18 @@ public class menuScreen extends Screen {
 
                 if (x >= currentX && x <= currentX + itemWidth && y >= currentY && y <= currentY + itemHeight) {
                     int colorX = currentX + 24 + textWidth + 6;
-                    int closeX = colorX + 18;
+                    int renderToggleX = colorX + 16;
+                    int closeX = renderToggleX + toggleTextWidth + 10;
 
                     // slight bigger than close 'x' itself
                     if (x >= closeX - 2 && x <= closeX + closeWidth + 2) {
                         activePool.remove(i);
+
+                        Button renderButton = blockRenderToggles.remove(config);
+                        if (renderButton != null) {
+                            this.removeWidget(renderButton);
+                        }
+
                         if (selectedConfig == config) {
                             selectedConfig = null;
                         }
@@ -481,7 +505,8 @@ public class menuScreen extends Screen {
 
             int textWidth = this.font.width(name);
             int closeWidth = this.font.width("x");
-            int itemWidth = 24 + textWidth + 24 + closeWidth + 4;
+            int toggleTextWidth = Math.max(this.font.width("✔"), this.font.width("❌"));
+            int itemWidth = 24 + textWidth + 24 + toggleTextWidth + 10 + closeWidth + 4;
 
             if (currentX + itemWidth > maxWidth) {
                 currentX = startX;
@@ -503,7 +528,24 @@ public class menuScreen extends Screen {
             int colorX = currentX + 24 + textWidth + 6; // auto calc based on length of name
             context.fill(colorX, currentY + 6, colorX + 12, currentY + 18, colorUtils.arrayToInt(config.color));
 
-            int closeX = colorX + 18;
+            int renderToggleX = colorX + 16;
+            Button renderToggle = blockRenderToggles.get(config);
+            if (renderToggle == null) {
+                renderToggle = guiUtils.createButton(this, "", renderToggleX, currentY + 4, toggleTextWidth + 6, 16, button -> {
+                    config.renderEnabled = !config.renderEnabled;
+                    button.setMessage(Component.literal(config.renderEnabled ? "✔" : "❌").withStyle(style -> style.withColor(config.renderEnabled ? green : red)));
+                });
+
+                this.addRenderableWidget(renderToggle);
+                renderToggle.setMessage(Component.literal(config.renderEnabled ? "✔" : "❌").withStyle(style -> style.withColor(config.renderEnabled ? green : red)));
+                blockRenderToggles.put(config, renderToggle);
+            }
+
+            // update position every frame in case of updates
+            renderToggle.setX(renderToggleX);
+            renderToggle.setY(currentY + 4);
+
+            int closeX = renderToggleX + toggleTextWidth + 10;
             context.text(this.font, "x", closeX, currentY + (itemHeight - 8) / 2, 0xFFFF5555);
 
             currentX += itemWidth + horizontalPadding;
@@ -540,6 +582,7 @@ public class menuScreen extends Screen {
     public void init() {
         super.init();
         this.clearWidgets();
+        blockRenderToggles.clear();
 
         createInputs();
         createButtons();
@@ -577,10 +620,6 @@ public class menuScreen extends Screen {
 
         boolean usingSubmenu = selectedConfig != null;
 
-        if (usingSubmenu) {
-            renderSubmenuBackground(context);
-        }
-
         radiusSizeBox.setVisible(usingSubmenu); // seen in submenu
         minYBox.setVisible(usingSubmenu);
         maxYBox.setVisible(usingSubmenu);
@@ -598,13 +637,26 @@ public class menuScreen extends Screen {
         }
 
         renderSubmenu(context);
-
-        if (blockDropdown != null) {
-            blockDropdown.extractWidgetRenderState(context, mouseX, mouseY, delta);
-        }
-
         blockDropdown.handleMouseDrag(mouseY);
 
         super.extractRenderState(context, mouseX, mouseY, delta);
+
+        if (usingSubmenu) {
+            context.nextStratum();
+            renderSubmenuBackground(context);
+
+            context.nextStratum(); // z-index
+            radiusSizeBox.extractRenderState(context, mouseX, mouseY, delta);
+            minYBox.extractRenderState(context, mouseX, mouseY, delta);
+            maxYBox.extractRenderState(context, mouseX, mouseY, delta);
+            drawLinesCheckbox.extractRenderState(context, mouseX, mouseY, delta);
+            renderSubmenu(context);
+        }
+
+        if (blockDropdown != null) {
+            context.nextStratum();
+            blockDropdown.extractWidgetRenderState(context, mouseX, mouseY, delta);
+            blockDropdown.getSearchBox().extractRenderState(context, mouseX, mouseY, delta); // on top
+        }
     }
 }
