@@ -134,6 +134,8 @@ public class BlockFinderClient implements ClientModInitializer {
         		int playerChunkZ = playerPos.getZ() >> 4;
 
 				for (blockConfig config : menuScreen.getActivePool()) {
+					if (!config.renderEnabled) continue;
+					
 					List<BlockPos> positions = BlockScanner.foundBlocks.get(config.block);
         			if (positions == null) continue;
 
