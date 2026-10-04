@@ -1,4 +1,5 @@
 {
   "key.category.blockfinder.menu": "Block Finder",
-  "key.blockfinder.scan": "Open Block Finder Menu"
+  "key.blockfinder.scan": "Open Block Finder Menu",
+  "key.blockfinder.togglerender": "Start/Stop Rendering"
 }
