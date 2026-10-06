@@ -34,8 +34,10 @@ public class BlockFinderClient implements ClientModInitializer {
 	public static menuScreen mainScreen;
 	public static boolean hudRegistered = false;
 	private static boolean pipelineRegistered = false;
+	private static boolean renderingEnabled = true;
 
 	public static KeyMapping scanKey;
+	public static KeyMapping toggleRenderKey;
 	private static final KeyMapping.Category category = KeyMapping.Category.register(
 		Identifier.fromNamespaceAndPath("blockfinder", "menu")
 	);
@@ -54,6 +56,13 @@ public class BlockFinderClient implements ClientModInitializer {
 			"key.blockfinder.scan",
 			InputConstants.Type.KEYBOARD,
 			SDLScancode.SDL_SCANCODE_V, // for some reason this one maps to 'V' properly
+			category
+		));
+
+		toggleRenderKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+			"key.blockfinder.togglerender", 
+			InputConstants.Type.KEYBOARD, 
+			SDLScancode.SDL_SCANCODE_Z,
 			category
 		));
 
@@ -92,6 +101,10 @@ public class BlockFinderClient implements ClientModInitializer {
 				client.setScreenAndShow(mainScreen);
 			}
 
+			while (toggleRenderKey.consumeClick()) {
+				renderingEnabled = !renderingEnabled;
+			}
+
 			if (BlockScanner.autoRescan && BlockScanner.autoRescanReady && client.player != null &&
 			!BlockScanner.isScanning && BlockScanner.lastPlayerCenter != null) {
 				BlockPos currentPos = client.player.blockPosition();
@@ -119,6 +132,7 @@ public class BlockFinderClient implements ClientModInitializer {
 		});
 
 		LevelRenderEvents.END_MAIN.register(context -> { // runs every frame
+			if (!renderingEnabled) return;
 			Minecraft client = Minecraft.getInstance();
 
 			if (!pipelineRegistered) {
