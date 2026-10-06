@@ -28,8 +28,10 @@ public class BlockFinderClient implements ClientModInitializer {
 	public static menuScreen mainScreen;
 	public static boolean hudRegistered = false;
 	private static boolean pipelineRegistered = false;
+	private static boolean renderingEnabled = true;
 
 	public static KeyMapping scanKey;
+	public static KeyMapping toggleRenderKey;
 	private static final KeyMapping.Category category = KeyMapping.Category.register(
 		Identifier.fromNamespaceAndPath("blockfinder", "menu")
 	);
@@ -51,11 +53,22 @@ public class BlockFinderClient implements ClientModInitializer {
 			category
 		));
 
+		toggleRenderKey = KeyMappingHelper.registerKeyMapping(new KeyMapping(
+			"key.blockfinder.togglerender", 
+			InputConstants.Type.KEYBOARD, 
+			SDLScancode.SDL_SCANCODE_Z,
+			category
+		));
+
 		// runs every tick or 20x/s
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
 			while (scanKey.consumeClick()) {
 				mainScreen = new menuScreen();
 				client.setScreenAndShow(mainScreen);
+			}
+
+			while (toggleRenderKey.consumeClick()) {
+				renderingEnabled = !renderingEnabled;
 			}
 
 			if (BlockScanner.autoRescan && BlockScanner.autoRescanReady && client.player != null &&
@@ -85,6 +98,7 @@ public class BlockFinderClient implements ClientModInitializer {
 		});
 
 		LevelRenderEvents.END_MAIN.register(context -> { // runs every frame
+			if (!renderingEnabled) return;
 			Minecraft client = Minecraft.getInstance();
 
 			if (!pipelineRegistered) {

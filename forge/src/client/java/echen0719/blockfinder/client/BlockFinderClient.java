@@ -38,6 +38,7 @@ public class BlockFinderClient {
 
 	public static menuScreen mainScreen;
 	public static boolean hudRegistered = false;
+	private static boolean renderingEnabled = true;
 
 	private static final KeyMapping.Category category = KeyMapping.Category.register(
 		Identifier.fromNamespaceAndPath("blockfinder", "menu")
@@ -46,6 +47,12 @@ public class BlockFinderClient {
 		"key.blockfinder.scan", 
 		InputConstants.Type.KEYBOARD, 
 		SDLScancode.SDL_SCANCODE_V, // for some reason this one maps to 'V' properly
+		category
+	);
+	public static KeyMapping toggleRenderKey = new KeyMapping(
+		"key.blockfinder.togglerender", 
+		InputConstants.Type.KEYBOARD, 
+		SDLScancode.SDL_SCANCODE_Z,
 		category
 	);
 
@@ -64,6 +71,7 @@ public class BlockFinderClient {
 
 	public void registerKeys(RegisterKeyMappingsEvent event) {
     	event.register(scanKey);
+		event.register(toggleRenderKey);
 	}
 
 	public void onInitializeClient(FMLClientSetupEvent event) {
@@ -82,6 +90,10 @@ public class BlockFinderClient {
 		while (scanKey.consumeClick()) {
 			mainScreen = new menuScreen();
 			client.setScreenAndShow(mainScreen);
+		}
+
+		while (toggleRenderKey.consumeClick()) {
+			renderingEnabled = !renderingEnabled;
 		}
 
 		if (BlockScanner.autoRescan && BlockScanner.autoRescanReady && client.player != null &&
@@ -125,6 +137,7 @@ public class BlockFinderClient {
 	} // Forge 26.2 does not have RenderLevelStageEvent so I need to use Minecraft's instead
 
 	private void renderLevel() { // runs every frame
+		if (!renderingEnabled) return;
 		Minecraft client = Minecraft.getInstance();
 
 		if (BlockScanner.foundBlocks != null) {
